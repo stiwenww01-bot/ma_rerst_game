@@ -2,4 +2,17 @@
 <resources>
     <string name="app_name">Block Puzzle Saga</string>
     <string name="hello_world">Hello World</string>
+    <string name="new_game">Новая игра</string>
+    <string name="continue_game">Продолжить</string>
+    <string name="records">Рекорды</string>
+    <string name="settings">Настройки</string>
+    <string name="score_value">Очки: %1$d</string>
+    <string name="rotations_value">↻ %1$d</string>
+    <string name="rotate">↻</string>
+    <string name="back">Назад</string>
+    <string name="game_over">Игра окончена</string>
+    <string name="final_score_value">Итог: %1$d</string>
+    <string name="restart">Заново</string>
+    <string name="no_records">Рекордов пока нет</string>
+    <string name="prototype_settings">Классический серый прототип</string>
 </resources>

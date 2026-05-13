@@ -56,4 +56,23 @@ Checks:
 
 ## Stage 3. Basic UI prototype
 
-Status: ready to start.
+Tasks:
+- [x] `MainMenuScreen` with New Game, Continue, Records, Settings.
+- [x] `GameScreen` with 9x9 Compose Canvas board.
+- [x] Piece tray with three Canvas-rendered pieces.
+- [x] Drag and drop from tray to board with valid/invalid preview.
+- [x] Score, rotation counter, and rotate button.
+- [x] Basic `GameOverDialog` wired to domain `gameOver`.
+- [x] `RecordsScreen` table.
+- [x] `SettingsScreen` placeholder.
+- [x] Game state persists through Room after moves and rotation.
+
+Checks:
+- [x] Debug build passes (`:app:assembleDebug`).
+- [x] JVM unit tests pass (`:app:testDebugUnitTest`, 44 tests total).
+- [x] Domain coverage check passes (`:app:domainDebugCoverageCheck`, 96.73% instruction coverage).
+- [x] Emulator launch verified.
+- [x] Drag/drop verified on emulator; score updated after placement.
+- [x] Rotation verified on emulator; counter decreased from 3 to 2.
+- [x] Continue restored saved game after reinstall.
+- [ ] Full manual playthrough to Game Over.
