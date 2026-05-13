@@ -1,0 +1,30 @@
+package com.varp.blockpuzzlesaga.domain.model
+
+enum class PieceType {
+    SINGLE,
+    LINE_2,
+    LINE_3,
+    LINE_4,
+    LINE_5,
+    SQUARE_2,
+    SQUARE_3,
+    L_SMALL,
+    L,
+    J,
+    T,
+    S,
+    Z,
+    I,
+    O,
+    CORNER_5,
+    STEP_3,
+    PLUS,
+    U,
+    V,
+    SHORT_T,
+    LONG_L,
+    BIG_J,
+    DIAGONAL_2,
+    DIAGONAL_3,
+    PENTOMINO_P
+}
