@@ -24,13 +24,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.varp.blockpuzzlesaga.domain.model.Piece
 import com.varp.blockpuzzlesaga.ui.screens.game.cellFromRootPosition
 import com.varp.blockpuzzlesaga.ui.theme.LocalGameColors
-import kotlin.math.roundToInt
 
 @Composable
 fun PieceTray(
@@ -89,37 +87,37 @@ private fun DraggablePiece(
     onCancelDrag: () -> Unit
 ) {
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var isDragging by remember { mutableStateOf(false) }
     var lastCell by remember { mutableStateOf<com.varp.blockpuzzlesaga.domain.model.CellCoord?>(null) }
+    var anchorCell by remember { mutableStateOf(com.varp.blockpuzzlesaga.domain.model.CellCoord(0, 0)) }
 
     Box(
         modifier = Modifier
             .sizeIn(minWidth = 72.dp, minHeight = 72.dp)
             .fillMaxWidth(if (isSelected) 0.92f else 0.82f)
             .aspectRatio(1f)
-            .zIndex(if (dragOffset != Offset.Zero) 2f else 0f)
-            .offset { IntOffset(dragOffset.x.roundToInt(), dragOffset.y.roundToInt()) }
+            .alpha(if (isDragging) 0.35f else 1f)
             .clickable { onSelectPiece(pieceIndex) }
             .onGloballyPositioned { coordinates = it }
             .pointerInput(piece, boardBounds) {
                 detectDragGestures(
-                    onDragStart = {
-                        dragOffset = Offset.Zero
+                    onDragStart = { startPosition ->
+                        isDragging = true
+                        anchorCell = pieceAnchorCell(piece, startPosition, coordinates)
                         onSelectPiece(pieceIndex)
                     },
                     onDragCancel = {
-                        dragOffset = Offset.Zero
+                        isDragging = false
                         lastCell = null
                         onCancelDrag()
                     },
                     onDragEnd = {
                         onDrop(pieceIndex, lastCell)
-                        dragOffset = Offset.Zero
+                        isDragging = false
                         lastCell = null
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        dragOffset += dragAmount
                         val rootPosition = coordinates?.localToRoot(change.position)
                         val cell = rootPosition?.let { root ->
                             boardBounds?.let { bounds ->
@@ -129,7 +127,12 @@ private fun DraggablePiece(
                                     boardLeft = bounds.left,
                                     boardTop = bounds.top,
                                     boardSize = bounds.size
-                                )
+                                )?.let { boardCell ->
+                                    com.varp.blockpuzzlesaga.domain.model.CellCoord(
+                                        x = boardCell.x - anchorCell.x,
+                                        y = boardCell.y - anchorCell.y
+                                    )
+                                }
                             }
                         }
                         lastCell = cell
@@ -140,5 +143,29 @@ private fun DraggablePiece(
         contentAlignment = Alignment.Center
     ) {
         PieceCanvas(piece = piece)
+    }
+}
+
+private fun pieceAnchorCell(
+    piece: Piece,
+    position: Offset,
+    coordinates: LayoutCoordinates?
+): com.varp.blockpuzzlesaga.domain.model.CellCoord {
+    val size = coordinates?.size ?: return com.varp.blockpuzzlesaga.domain.model.CellCoord(0, 0)
+    val maxX = piece.cells.maxOf { it.x } + 1
+    val maxY = piece.cells.maxOf { it.y } + 1
+    val grid = maxOf(maxX, maxY, 3)
+    val cellSize = minOf(size.width, size.height).toFloat() / grid
+    val left = (size.width - cellSize * maxX) / 2f
+    val top = (size.height - cellSize * maxY) / 2f
+    val rawX = ((position.x - left) / cellSize).toInt()
+    val rawY = ((position.y - top) / cellSize).toInt()
+    val target = com.varp.blockpuzzlesaga.domain.model.CellCoord(rawX, rawY)
+    if (target in piece.cells) return target
+
+    return piece.cells.minBy { cell ->
+        val dx = cell.x - rawX
+        val dy = cell.y - rawY
+        dx * dx + dy * dy
     }
 }

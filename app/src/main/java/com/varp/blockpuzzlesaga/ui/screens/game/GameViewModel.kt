@@ -69,7 +69,8 @@ class GameViewModel(
                 pieceIndex = pieceIndex,
                 origin = origin,
                 cells = cells,
-                isValid = gameState.board.canPlace(piece, origin.x, origin.y)
+                isValid = gameState.board.canPlace(piece, origin.x, origin.y),
+                colorIndex = piece.colorIndex
             )
         }
         _uiState.update { it.copy(selectedPieceIndex = pieceIndex, dragPreview = preview) }

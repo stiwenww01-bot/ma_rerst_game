@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import com.varp.blockpuzzlesaga.domain.model.Piece
 import com.varp.blockpuzzlesaga.ui.theme.LocalGameColors
 
@@ -33,10 +35,24 @@ fun PieceCanvas(
         piece.cells.forEach { cell ->
             val inset = cellSize * 0.08f
             drawRoundRect(
+                color = color.copy(alpha = 0.26f),
+                topLeft = Offset(left + cell.x * cellSize + inset * 0.2f, top + cell.y * cellSize + inset * 0.2f),
+                size = Size(cellSize - inset * 0.4f, cellSize - inset * 0.4f),
+                cornerRadius = CornerRadius(cellSize * 0.18f, cellSize * 0.18f),
+                style = Stroke(width = 6f)
+            )
+            drawRoundRect(
                 color = color,
                 topLeft = Offset(left + cell.x * cellSize + inset, top + cell.y * cellSize + inset),
                 size = Size(cellSize - inset * 2, cellSize - inset * 2),
                 cornerRadius = CornerRadius(cellSize * 0.14f, cellSize * 0.14f)
+            )
+            drawRoundRect(
+                color = Color.White.copy(alpha = 0.5f),
+                topLeft = Offset(left + cell.x * cellSize + inset, top + cell.y * cellSize + inset),
+                size = Size(cellSize - inset * 2, cellSize - inset * 2),
+                cornerRadius = CornerRadius(cellSize * 0.14f, cellSize * 0.14f),
+                style = Stroke(width = 1.4f)
             )
         }
     }

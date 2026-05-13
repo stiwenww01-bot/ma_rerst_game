@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -57,7 +58,7 @@ fun BoardCanvas(
             drawCell(
                 coord = coord,
                 cellSize = cellSize,
-                color = if (placedCell.colorIndex % 2 == 0) colors.boardBlock else colors.boardBlockAlt
+                color = colors.piecePalette[placedCell.colorIndex.mod(colors.piecePalette.size)]
             )
         }
 
@@ -66,22 +67,31 @@ fun BoardCanvas(
                 drawCell(
                     coord = coord,
                     cellSize = cellSize,
-                    color = if (dragPreview.isValid) colors.previewValid else colors.previewInvalid
+                    color = if (dragPreview.isValid) {
+                        colors.piecePalette[dragPreview.colorIndex.mod(colors.piecePalette.size)].copy(alpha = 0.78f)
+                    } else {
+                        colors.previewInvalid
+                    }
                 )
             }
         }
 
+        drawRect(
+            color = colors.boardLine.copy(alpha = 0.35f),
+            size = Size(boardSize, boardSize),
+            style = Stroke(width = 10f)
+        )
         for (index in 0..Board.SIZE) {
             val width = if (index % 3 == 0) 3f else 1f
             val offset = index * cellSize
             drawLine(
-                color = colors.boardLine,
+                color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
                 start = Offset(offset, 0f),
                 end = Offset(offset, boardSize),
                 strokeWidth = width
             )
             drawLine(
-                color = colors.boardLine,
+                color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
                 start = Offset(0f, offset),
                 end = Offset(boardSize, offset),
                 strokeWidth = width
@@ -97,17 +107,24 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawCell(
 ) {
     val inset = cellSize * 0.08f
     drawRoundRect(
-        color = color,
+        color = color.copy(alpha = 0.96f),
         topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
         size = Size(cellSize - inset * 2, cellSize - inset * 2),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.12f, cellSize * 0.12f)
     )
     drawRoundRect(
-        color = color.copy(alpha = 0.35f),
+        color = color.copy(alpha = 0.65f),
+        topLeft = Offset(coord.x * cellSize + inset * 0.2f, coord.y * cellSize + inset * 0.2f),
+        size = Size(cellSize - inset * 0.4f, cellSize - inset * 0.4f),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.16f, cellSize * 0.16f),
+        style = Stroke(width = 7f)
+    )
+    drawRoundRect(
+        color = Color.White.copy(alpha = 0.58f),
         topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
         size = Size(cellSize - inset * 2, cellSize - inset * 2),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.12f, cellSize * 0.12f),
-        style = Stroke(width = 1.5f)
+        style = Stroke(width = 2.2f)
     )
 }
 

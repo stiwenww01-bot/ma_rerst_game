@@ -16,5 +16,6 @@ data class DragPreview(
     val pieceIndex: Int,
     val origin: CellCoord,
     val cells: Set<CellCoord>,
-    val isValid: Boolean
+    val isValid: Boolean,
+    val colorIndex: Int
 )

@@ -7,6 +7,7 @@
     <string name="records">Рекорды</string>
     <string name="settings">Настройки</string>
     <string name="score_value">Очки: %1$d</string>
+    <string name="best_score_value">Лучший: %1$d</string>
     <string name="rotations_value">↻ %1$d</string>
     <string name="rotate">↻</string>
     <string name="back">Назад</string>

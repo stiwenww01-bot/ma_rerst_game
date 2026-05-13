@@ -1,6 +1,7 @@
 package com.varp.blockpuzzlesaga.ui.screens.game
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.varp.blockpuzzlesaga.R
@@ -40,23 +42,25 @@ fun GameScreen(
 ) {
     var boardBounds by remember { mutableStateOf<BoardBounds?>(null) }
     val gameState = uiState.gameState
+    val bestScore = uiState.records.maxOfOrNull { it.score } ?: 0
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = stringResource(R.string.score_value, gameState.score),
-                style = MaterialTheme.typography.titleLarge
+                text = stringResource(R.string.best_score_value, bestScore),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.align(Alignment.CenterStart)
             )
             Text(
-                text = stringResource(R.string.rotations_value, gameState.rotationManager.remainingRotations),
-                style = MaterialTheme.typography.titleMedium
+                text = stringResource(R.string.score_value, gameState.score),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.align(Alignment.Center)
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
