@@ -38,4 +38,22 @@ Checks:
 
 ## Stage 2. Database (Room)
 
+Tasks:
+- [x] Add entities: `RecordEntity`, `SettingsEntity`, `GameStateEntity`, `StatisticsEntity`.
+- [x] Add DAO CRUD methods for records, settings, game state, and statistics.
+- [x] Upgrade `AppDatabase` to version 2 with `MIGRATION_1_2`.
+- [x] Add repositories: `GameRepository`, `SettingsRepository`, `StatsRepository`, `RecordsRepository`.
+- [x] Add JSON serialization for `GameState` using `kotlinx.serialization`.
+
+Checks:
+- [x] Test: save and read record.
+- [x] Test: save unfinished game and restore it.
+- [x] Test: saved game can be cleared.
+- [x] Test: settings and statistics persist through Room.
+- [x] Test: migration creates Stage 2 tables.
+- [x] JVM unit tests pass (`:app:testDebugUnitTest`, 44 tests total).
+- [x] Debug build passes (`:app:assembleDebug`).
+
+## Stage 3. Basic UI prototype
+
 Status: ready to start.
