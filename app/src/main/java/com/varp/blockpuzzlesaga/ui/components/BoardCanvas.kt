@@ -118,22 +118,23 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawClearingCell(
 ) {
     val inset = cellSize * 0.03f
     drawRoundRect(
-        color = color.copy(alpha = 0.35f),
+        color = color.copy(alpha = 0.52f),
         topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
         size = Size(cellSize - inset * 2, cellSize - inset * 2),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.18f, cellSize * 0.18f)
     )
     drawRoundRect(
-        color = color.copy(alpha = 0.95f),
-        topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
-        size = Size(cellSize - inset * 2, cellSize - inset * 2),
-        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.18f, cellSize * 0.18f),
-        style = Stroke(width = 5f)
+        color = Color.White.copy(alpha = 0.26f),
+        topLeft = Offset(coord.x * cellSize + inset * 2.2f, coord.y * cellSize + inset * 2.2f),
+        size = Size(cellSize - inset * 4.4f, cellSize - inset * 4.4f),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.14f, cellSize * 0.14f)
     )
-    drawCircle(
-        color = Color.White.copy(alpha = 0.85f),
-        radius = cellSize * 0.11f,
-        center = Offset(coord.x * cellSize + cellSize * 0.5f, coord.y * cellSize + cellSize * 0.5f)
+    drawRoundRect(
+        color = color.copy(alpha = 1f),
+        topLeft = Offset(coord.x * cellSize + inset * 0.2f, coord.y * cellSize + inset * 0.2f),
+        size = Size(cellSize - inset * 0.4f, cellSize - inset * 0.4f),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.2f, cellSize * 0.2f),
+        style = Stroke(width = 6f)
     )
 }
 
