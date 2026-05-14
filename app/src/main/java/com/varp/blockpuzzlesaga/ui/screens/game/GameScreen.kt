@@ -3,7 +3,6 @@ package com.varp.blockpuzzlesaga.ui.screens.game
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -110,42 +107,37 @@ fun GameScreen(
                 .fillMaxWidth()
                 .aspectRatio(1f)
         ) {
-            Image(
-                painter = painterResource(R.drawable.space_board_frame),
-                contentDescription = null,
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.FillBounds
-            )
             BoardCanvas(
                 board = board,
                 dragPreview = uiState.dragPreview,
                 clearingCells = uiState.clearingCells,
                 onBoundsChanged = { boardBounds = it },
-                drawBoardChrome = false,
+                drawBoardChrome = true,
                 modifier = Modifier
                     .matchParentSize()
-                    .padding(start = 30.dp, top = 38.dp, end = 30.dp, bottom = 38.dp)
+                    .padding(start = 36.dp, top = 40.dp, end = 36.dp, bottom = 40.dp)
+            )
+            Image(
+                painter = painterResource(R.drawable.space_board_frame_overlay),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds
             )
         }
         Spacer(modifier = Modifier.height(14.dp))
-        Box(
+        PieceTray(
+            pieces = gameState.availablePieces,
+            boardBounds = boardBounds,
+            selectedPieceIndex = uiState.selectedPieceIndex,
+            enabled = !uiState.isResolvingClear,
+            onSelectPiece = onSelectPiece,
+            onPreview = onPreview,
+            onDrop = onDrop,
+            onCancelDrag = onCancelDrag,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(colors.panelBackground)
-                .padding(8.dp)
-        ) {
-            PieceTray(
-                pieces = gameState.availablePieces,
-                boardBounds = boardBounds,
-                selectedPieceIndex = uiState.selectedPieceIndex,
-                enabled = !uiState.isResolvingClear,
-                onSelectPiece = onSelectPiece,
-                onPreview = onPreview,
-                onDrop = onDrop,
-                onCancelDrag = onCancelDrag
-            )
-        }
+                .padding(horizontal = 4.dp)
+        )
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = onRotate,

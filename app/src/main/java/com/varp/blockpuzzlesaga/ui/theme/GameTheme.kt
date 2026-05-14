@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -21,6 +22,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.varp.blockpuzzlesaga.R
 import kotlin.math.sin
 
 enum class GameThemeId(
@@ -238,6 +242,16 @@ fun BlockPuzzleSagaTheme(
 @Composable
 fun GameBackground(modifier: Modifier = Modifier) {
     val colors = LocalGameColors.current
+    if (colors.themeId == GameThemeId.Space) {
+        Image(
+            painter = painterResource(R.drawable.space_bg_game),
+            contentDescription = null,
+            modifier = modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        return
+    }
+
     val transition = rememberInfiniteTransition(label = "theme-particles")
     val phase by transition.animateFloat(
         initialValue = 0f,

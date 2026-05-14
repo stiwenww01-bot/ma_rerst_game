@@ -1,6 +1,5 @@
 package com.varp.blockpuzzlesaga.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -8,11 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +24,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.varp.blockpuzzlesaga.domain.model.Piece
 import com.varp.blockpuzzlesaga.ui.screens.game.cellFromRootPosition
-import com.varp.blockpuzzlesaga.ui.theme.LocalGameColors
 
 @Composable
 fun PieceTray(
@@ -42,12 +37,10 @@ fun PieceTray(
     onCancelDrag: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalGameColors.current
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(colors.trayBackground.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
-            .padding(10.dp),
+            .padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -55,8 +48,7 @@ fun PieceTray(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .aspectRatio(1f)
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp)),
+                    .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
                 if (piece != null) {

@@ -2,9 +2,12 @@ package com.varp.blockpuzzlesaga
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,6 +37,10 @@ import com.varp.blockpuzzlesaga.ui.theme.GameBackground
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
         setContent {
             BlockPuzzleSagaApp()
         }
@@ -76,7 +83,8 @@ fun BlockPuzzleSagaApp() {
             } else {
                 NavHost(
                     navController = navController,
-                    startDestination = Route.Menu.path
+                    startDestination = Route.Menu.path,
+                    modifier = Modifier.systemBarsPadding()
                 ) {
                     composable(Route.Menu.path) {
                         MainMenuScreen(
