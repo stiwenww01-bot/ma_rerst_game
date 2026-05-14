@@ -29,6 +29,7 @@ fun BoardCanvas(
     dragPreview: DragPreview?,
     clearingCells: Set<CellCoord>,
     onBoundsChanged: (BoardBounds) -> Unit,
+    drawBoardChrome: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val colors = LocalGameColors.current
@@ -50,10 +51,12 @@ fun BoardCanvas(
         val boardSize = size.minDimension
         val cellSize = boardSize / Board.SIZE
 
-        drawRect(
-            color = colors.boardBackground,
-            size = Size(boardSize, boardSize)
-        )
+        if (drawBoardChrome) {
+            drawRect(
+                color = colors.boardBackground,
+                size = Size(boardSize, boardSize)
+            )
+        }
 
         board.cells.forEach { (coord, placedCell) ->
             drawCell(
@@ -87,26 +90,28 @@ fun BoardCanvas(
             }
         }
 
-        drawRect(
-            color = colors.boardLine.copy(alpha = 0.35f),
-            size = Size(boardSize, boardSize),
-            style = Stroke(width = 10f)
-        )
-        for (index in 0..Board.SIZE) {
-            val width = if (index % 3 == 0) 3f else 1f
-            val offset = index * cellSize
-            drawLine(
-                color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
-                start = Offset(offset, 0f),
-                end = Offset(offset, boardSize),
-                strokeWidth = width
+        if (drawBoardChrome) {
+            drawRect(
+                color = colors.boardLine.copy(alpha = 0.35f),
+                size = Size(boardSize, boardSize),
+                style = Stroke(width = 10f)
             )
-            drawLine(
-                color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
-                start = Offset(0f, offset),
-                end = Offset(boardSize, offset),
-                strokeWidth = width
-            )
+            for (index in 0..Board.SIZE) {
+                val width = if (index % 3 == 0) 3f else 1f
+                val offset = index * cellSize
+                drawLine(
+                    color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
+                    start = Offset(offset, 0f),
+                    end = Offset(offset, boardSize),
+                    strokeWidth = width
+                )
+                drawLine(
+                    color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
+                    start = Offset(0f, offset),
+                    end = Offset(boardSize, offset),
+                    strokeWidth = width
+                )
+            }
         }
     }
 }

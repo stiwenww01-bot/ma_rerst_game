@@ -1,18 +1,21 @@
 package com.varp.blockpuzzlesaga.ui.screens.game
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -30,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.varp.blockpuzzlesaga.R
@@ -96,16 +101,32 @@ fun GameScreen(
                 modifier = Modifier.align(Alignment.TopEnd),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                NeonIconButton(text = "⚙", onClick = onSettings)
-                NeonIconButton(text = "⌂", onClick = onBack)
+                NeonIconButton(iconRes = R.drawable.space_icon_settings, fallbackText = "⚙", onClick = onSettings)
+                NeonIconButton(iconRes = R.drawable.space_icon_home, fallbackText = "⌂", onClick = onBack)
             }
         }
-        BoardCanvas(
-            board = board,
-            dragPreview = uiState.dragPreview,
-            clearingCells = uiState.clearingCells,
-            onBoundsChanged = { boardBounds = it }
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+        ) {
+            Image(
+                painter = painterResource(R.drawable.space_board_frame),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds
+            )
+            BoardCanvas(
+                board = board,
+                dragPreview = uiState.dragPreview,
+                clearingCells = uiState.clearingCells,
+                onBoundsChanged = { boardBounds = it },
+                drawBoardChrome = false,
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(start = 30.dp, top = 38.dp, end = 30.dp, bottom = 38.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(14.dp))
         Box(
             modifier = Modifier
@@ -134,6 +155,7 @@ fun GameScreen(
             modifier = Modifier.size(58.dp),
             shape = CircleShape,
             border = BorderStroke(2.dp, colors.boardLine),
+            contentPadding = PaddingValues(0.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = colors.panelBackground,
                 contentColor = colors.clearHighlight,
@@ -141,9 +163,11 @@ fun GameScreen(
                 disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f)
             )
         ) {
-            Text(
-                text = stringResource(R.string.rotate),
-                style = MaterialTheme.typography.headlineSmall
+            Image(
+                painter = painterResource(R.drawable.space_icon_rotate),
+                contentDescription = stringResource(R.string.rotate),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
             )
         }
     }
@@ -169,7 +193,8 @@ fun GameScreen(
 
 @Composable
 private fun NeonIconButton(
-    text: String,
+    @DrawableRes iconRes: Int,
+    fallbackText: String,
     onClick: () -> Unit
 ) {
     val colors = LocalGameColors.current
@@ -178,17 +203,18 @@ private fun NeonIconButton(
         modifier = Modifier
             .size(48.dp),
         shape = CircleShape,
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+        contentPadding = PaddingValues(0.dp),
         border = BorderStroke(2.dp, colors.boardLine),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = colors.panelBackground.copy(alpha = 0.8f),
             contentColor = MaterialTheme.colorScheme.onBackground
         )
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+        Image(
+            painter = painterResource(iconRes),
+            contentDescription = fallbackText,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Fit
         )
     }
 }
