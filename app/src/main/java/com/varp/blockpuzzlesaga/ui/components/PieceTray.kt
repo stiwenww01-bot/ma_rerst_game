@@ -16,12 +16,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.varp.blockpuzzlesaga.domain.model.Piece
 import com.varp.blockpuzzlesaga.ui.screens.game.cellFromRootPosition
 
@@ -85,13 +87,15 @@ private fun DraggablePiece(
     var isDragging by remember { mutableStateOf(false) }
     var lastCell by remember { mutableStateOf<com.varp.blockpuzzlesaga.domain.model.CellCoord?>(null) }
     var anchorCell by remember { mutableStateOf(com.varp.blockpuzzlesaga.domain.model.CellCoord(0, 0)) }
+    var dragOffset by remember(piece) { mutableStateOf(Offset.Zero) }
 
     Box(
         modifier = Modifier
             .sizeIn(minWidth = 72.dp, minHeight = 72.dp)
             .fillMaxWidth(if (isSelected) 0.92f else 0.82f)
             .aspectRatio(1f)
-            .alpha(if (isDragging || !enabled) 0.35f else 1f)
+            .zIndex(if (isDragging) 10f else 0f)
+            .alpha(if (!enabled) 0.35f else 1f)
             .clickable(enabled = enabled) { onSelectPiece(pieceIndex) }
             .onGloballyPositioned { coordinates = it }
             .pointerInput(piece, boardBounds, enabled) {
@@ -100,21 +104,25 @@ private fun DraggablePiece(
                 detectDragGestures(
                     onDragStart = { startPosition ->
                         isDragging = true
+                        dragOffset = Offset(0f, -dragLiftOffset)
                         anchorCell = pieceAnchorCell(piece, startPosition, coordinates)
                         onSelectPiece(pieceIndex)
                     },
                     onDragCancel = {
                         isDragging = false
+                        dragOffset = Offset.Zero
                         lastCell = null
                         onCancelDrag()
                     },
                     onDragEnd = {
                         onDrop(pieceIndex, lastCell)
                         isDragging = false
+                        dragOffset = Offset.Zero
                         lastCell = null
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
+                        dragOffset += dragAmount
                         val rootPosition = coordinates?.localToRoot(change.position)?.let { root ->
                             Offset(root.x, root.y - dragLiftOffset)
                         }
@@ -141,7 +149,17 @@ private fun DraggablePiece(
             },
         contentAlignment = Alignment.Center
     ) {
-        PieceCanvas(piece = piece)
+        PieceCanvas(
+            piece = piece,
+            modifier = Modifier
+                .graphicsLayer {
+                    translationX = dragOffset.x
+                    translationY = dragOffset.y
+                    scaleX = if (isDragging) 1.04f else 1f
+                    scaleY = if (isDragging) 1.04f else 1f
+                    shadowElevation = if (isDragging) 16.dp.toPx() else 0f
+                }
+        )
     }
 }
 
