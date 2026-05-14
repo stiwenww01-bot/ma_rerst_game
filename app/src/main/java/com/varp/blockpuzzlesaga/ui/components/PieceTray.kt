@@ -96,6 +96,7 @@ private fun DraggablePiece(
             .onGloballyPositioned { coordinates = it }
             .pointerInput(piece, boardBounds, enabled) {
                 if (!enabled) return@pointerInput
+                val dragLiftOffset = 96.dp.toPx()
                 detectDragGestures(
                     onDragStart = { startPosition ->
                         isDragging = true
@@ -114,7 +115,9 @@ private fun DraggablePiece(
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        val rootPosition = coordinates?.localToRoot(change.position)
+                        val rootPosition = coordinates?.localToRoot(change.position)?.let { root ->
+                            Offset(root.x, root.y - dragLiftOffset)
+                        }
                         val cell = rootPosition?.let { root ->
                             boardBounds?.let { bounds ->
                                 cellFromRootPosition(
