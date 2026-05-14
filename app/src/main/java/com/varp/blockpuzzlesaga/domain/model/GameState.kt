@@ -51,6 +51,7 @@ data class GameState(
 
         return MoveResult.Placed(
             state = nextState,
+            boardBeforeClear = placement.board,
             placedCells = placement.cells,
             clearedCells = clearResult.clearedCells,
             collapsedCells = comboUpdate.collapse?.cells.orEmpty(),
@@ -80,6 +81,7 @@ sealed class MoveResult {
 
     data class Placed(
         override val state: GameState,
+        val boardBeforeClear: Board,
         val placedCells: Set<CellCoord>,
         val clearedCells: Set<CellCoord>,
         val collapsedCells: Set<CellCoord>,

@@ -35,6 +35,7 @@ fun PieceTray(
     pieces: List<Piece?>,
     boardBounds: BoardBounds?,
     selectedPieceIndex: Int?,
+    enabled: Boolean,
     onSelectPiece: (Int) -> Unit,
     onPreview: (Int, com.varp.blockpuzzlesaga.domain.model.CellCoord?) -> Unit,
     onDrop: (Int, com.varp.blockpuzzlesaga.domain.model.CellCoord?) -> Unit,
@@ -45,8 +46,8 @@ fun PieceTray(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(colors.trayBackground, RoundedCornerShape(8.dp))
-            .padding(12.dp),
+            .background(colors.trayBackground.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+            .padding(10.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -64,6 +65,7 @@ fun PieceTray(
                         pieceIndex = index,
                         boardBounds = boardBounds,
                         isSelected = selectedPieceIndex == index,
+                        enabled = enabled,
                         onSelectPiece = onSelectPiece,
                         onPreview = onPreview,
                         onDrop = onDrop,
@@ -81,6 +83,7 @@ private fun DraggablePiece(
     pieceIndex: Int,
     boardBounds: BoardBounds?,
     isSelected: Boolean,
+    enabled: Boolean,
     onSelectPiece: (Int) -> Unit,
     onPreview: (Int, com.varp.blockpuzzlesaga.domain.model.CellCoord?) -> Unit,
     onDrop: (Int, com.varp.blockpuzzlesaga.domain.model.CellCoord?) -> Unit,
@@ -96,10 +99,11 @@ private fun DraggablePiece(
             .sizeIn(minWidth = 72.dp, minHeight = 72.dp)
             .fillMaxWidth(if (isSelected) 0.92f else 0.82f)
             .aspectRatio(1f)
-            .alpha(if (isDragging) 0.35f else 1f)
-            .clickable { onSelectPiece(pieceIndex) }
+            .alpha(if (isDragging || !enabled) 0.35f else 1f)
+            .clickable(enabled = enabled) { onSelectPiece(pieceIndex) }
             .onGloballyPositioned { coordinates = it }
-            .pointerInput(piece, boardBounds) {
+            .pointerInput(piece, boardBounds, enabled) {
+                if (!enabled) return@pointerInput
                 detectDragGestures(
                     onDragStart = { startPosition ->
                         isDragging = true

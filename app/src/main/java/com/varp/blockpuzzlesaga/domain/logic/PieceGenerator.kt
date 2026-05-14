@@ -60,7 +60,6 @@ class PieceGenerator(
             line4,
             line5,
             square2,
-            square3,
             lSmall,
             l,
             j,

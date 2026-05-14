@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class GameViewModel(
@@ -44,6 +45,9 @@ class GameViewModel(
                     gameState = state,
                     selectedPieceIndex = null,
                     dragPreview = null,
+                    boardOverride = null,
+                    clearingCells = emptySet(),
+                    isResolvingClear = false,
                     isLoading = false
                 )
             }
@@ -51,16 +55,19 @@ class GameViewModel(
     }
 
     fun selectPiece(index: Int) {
+        if (_uiState.value.isResolvingClear) return
         _uiState.update { it.copy(selectedPieceIndex = index) }
     }
 
     fun rotateSelectedPiece() {
+        if (_uiState.value.isResolvingClear) return
         val index = _uiState.value.selectedPieceIndex ?: return
         val nextState = _uiState.value.gameState.rotatePiece(index)
         persist(nextState)
     }
 
     fun updateDragPreview(pieceIndex: Int, boardCell: CellCoord?) {
+        if (_uiState.value.isResolvingClear) return
         val gameState = _uiState.value.gameState
         val piece = gameState.availablePieces.getOrNull(pieceIndex) ?: return
         val preview = boardCell?.let { origin ->
@@ -81,6 +88,7 @@ class GameViewModel(
     }
 
     fun dropPiece(pieceIndex: Int, boardCell: CellCoord?) {
+        if (_uiState.value.isResolvingClear) return
         val origin = boardCell ?: run {
             clearDragPreview()
             return
@@ -89,6 +97,20 @@ class GameViewModel(
             is MoveResult.Invalid -> clearDragPreview()
             is MoveResult.Placed -> {
                 viewModelScope.launch {
+                    val clearingCells = result.clearedCells + result.collapsedCells
+                    if (clearingCells.isNotEmpty()) {
+                        _uiState.update {
+                            it.copy(
+                                gameState = result.state.copy(board = result.boardBeforeClear),
+                                selectedPieceIndex = null,
+                                dragPreview = null,
+                                boardOverride = result.boardBeforeClear,
+                                clearingCells = clearingCells,
+                                isResolvingClear = true
+                            )
+                        }
+                        delay(CLEAR_HIGHLIGHT_MILLIS)
+                    }
                     if (result.state.gameOver) {
                         recordsRepository.saveRecord("overall", result.state.score)
                     }
@@ -98,7 +120,10 @@ class GameViewModel(
                             gameState = result.state,
                             records = recordsRepository.getRecords(),
                             selectedPieceIndex = null,
-                            dragPreview = null
+                            dragPreview = null,
+                            boardOverride = null,
+                            clearingCells = emptySet(),
+                            isResolvingClear = false
                         )
                     }
                 }
@@ -115,8 +140,20 @@ class GameViewModel(
     private fun persist(state: GameState) {
         viewModelScope.launch {
             gameRepository.saveGame(state)
-            _uiState.update { it.copy(gameState = state, dragPreview = null) }
+            _uiState.update {
+                it.copy(
+                    gameState = state,
+                    dragPreview = null,
+                    boardOverride = null,
+                    clearingCells = emptySet(),
+                    isResolvingClear = false
+                )
+            }
         }
+    }
+
+    private companion object {
+        const val CLEAR_HIGHLIGHT_MILLIS = 320L
     }
 
     class Factory(

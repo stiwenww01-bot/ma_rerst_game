@@ -80,6 +80,7 @@ fun BlockPuzzleSagaApp() {
                 ) {
                     composable(Route.Menu.path) {
                         MainMenuScreen(
+                            records = uiState.records,
                             onNewGame = {
                                 viewModel.newGame()
                                 navController.navigate(Route.Game.path)
@@ -93,6 +94,7 @@ fun BlockPuzzleSagaApp() {
                         GameScreen(
                             uiState = uiState,
                             onBack = { navController.popBackStack(Route.Menu.path, inclusive = false) },
+                            onSettings = { navController.navigate(Route.Settings.path) },
                             onSelectPiece = viewModel::selectPiece,
                             onRotate = viewModel::rotateSelectedPiece,
                             onPreview = viewModel::updateDragPreview,

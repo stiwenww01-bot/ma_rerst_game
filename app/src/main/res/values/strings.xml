@@ -17,4 +17,7 @@
     <string name="no_records">Рекордов пока нет</string>
     <string name="prototype_settings">Классический серый прототип</string>
     <string name="theme_selection">Выбор темы</string>
+    <string name="event_timer">TIME-LIMITED EVENT  2d 3h</string>
+    <string name="galactic_records">ГАЛАКТИЧЕСКИЕ РЕКОРДЫ</string>
+    <string name="all_time">За все время</string>
 </resources>

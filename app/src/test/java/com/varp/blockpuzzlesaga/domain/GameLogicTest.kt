@@ -240,6 +240,11 @@ class GameLogicTest {
     }
 
     @Test
+    fun pieceGeneratorDoesNotOfferThreeByThreeSquare() {
+        assertFalse(PieceGenerator(Random(1)).allTemplates().any { it.type == PieceType.SQUARE_3 })
+    }
+
+    @Test
     fun pieceGeneratorIncludesSmallPieceInTrayForBalance() {
         val tray = PieceGenerator(Random(2)).generateTray()
 
@@ -289,6 +294,7 @@ class GameLogicTest {
 
         assertEquals(101, result.addedScore)
         assertTrue(CellCoord(8, 0) in result.clearedCells)
+        assertTrue(CellCoord(8, 0) in result.boardBeforeClear.cells)
         assertTrue(result.state.board.cells.isEmpty())
     }
 

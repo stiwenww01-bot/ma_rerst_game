@@ -98,4 +98,7 @@ Checks:
 - [x] Theme changes apply without app restart on emulator.
 - [x] Selected theme survives force-stop/relaunch on emulator.
 - [x] Game screen uses the selected theme on emulator.
+- [x] Space theme menu and game screen received a stronger visual pass based on user screenshots.
+- [x] 3x3 square piece is excluded from generated pieces and covered by a unit test.
+- [x] Cells scheduled for row/column/box clear are highlighted briefly before disappearing.
 - [ ] Particle FPS check with performance tooling.

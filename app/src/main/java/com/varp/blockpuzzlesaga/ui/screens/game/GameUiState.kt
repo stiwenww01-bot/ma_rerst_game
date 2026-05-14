@@ -1,6 +1,7 @@
 package com.varp.blockpuzzlesaga.ui.screens.game
 
 import com.varp.blockpuzzlesaga.data.db.RecordEntity
+import com.varp.blockpuzzlesaga.domain.model.Board
 import com.varp.blockpuzzlesaga.domain.model.CellCoord
 import com.varp.blockpuzzlesaga.domain.model.GameState
 
@@ -9,6 +10,9 @@ data class GameUiState(
     val records: List<RecordEntity> = emptyList(),
     val selectedPieceIndex: Int? = null,
     val dragPreview: DragPreview? = null,
+    val boardOverride: Board? = null,
+    val clearingCells: Set<CellCoord> = emptySet(),
+    val isResolvingClear: Boolean = false,
     val isLoading: Boolean = true
 )
 
