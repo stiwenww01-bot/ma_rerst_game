@@ -27,8 +27,9 @@ import com.varp.blockpuzzlesaga.ui.screens.game.GameViewModel
 import com.varp.blockpuzzlesaga.ui.screens.menu.MainMenuScreen
 import com.varp.blockpuzzlesaga.ui.screens.records.RecordsScreen
 import com.varp.blockpuzzlesaga.ui.screens.settings.SettingsScreen
+import com.varp.blockpuzzlesaga.ui.screens.settings.SettingsViewModel
 import com.varp.blockpuzzlesaga.ui.theme.BlockPuzzleSagaTheme
-import com.varp.blockpuzzlesaga.ui.theme.SpaceBackground
+import com.varp.blockpuzzlesaga.ui.theme.GameBackground
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,16 +50,22 @@ fun BlockPuzzleSagaApp() {
             recordsRepository = container.recordsRepository
         )
     )
+    val settingsViewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModel.Factory(
+            settingsRepository = container.settingsRepository
+        )
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
 
-    BlockPuzzleSagaTheme {
+    BlockPuzzleSagaTheme(selectedThemeKey = settingsState.selectedThemeKey) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onBackground
         ) {
-            SpaceBackground()
+            GameBackground()
             if (uiState.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -105,6 +112,8 @@ fun BlockPuzzleSagaApp() {
                     }
                     composable(Route.Settings.path) {
                         SettingsScreen(
+                            uiState = settingsState,
+                            onThemeSelected = settingsViewModel::selectTheme,
                             onBack = { navController.popBackStack() }
                         )
                     }

@@ -62,7 +62,7 @@ class AppDatabaseTest {
         withDatabase { db ->
             val settings = SettingsRepository(db.settingsDao()).getSettings()
 
-            assertEquals(SettingsEntity.THEME_CLASSIC, settings.selectedTheme)
+            assertEquals(SettingsEntity.THEME_SPACE, settings.selectedTheme)
             assertTrue(settings.soundEnabled)
             assertTrue(settings.vibrationEnabled)
         }

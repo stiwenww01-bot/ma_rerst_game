@@ -76,3 +76,26 @@ Checks:
 - [x] Rotation verified on emulator; counter decreased from 3 to 2.
 - [x] Continue restored saved game after reinstall.
 - [ ] Full manual playthrough to Game Over.
+
+## Stage 4. Graphical themes
+
+Notes:
+- No Figma link or selected frame was provided for this stage, so the current implementation uses code-driven Compose themes and Canvas previews/effects. Figma asset export remains open if a source design is provided later.
+
+Tasks:
+- [x] Add a Compose theme provider with four theme ids: Space, Western, Classic, Cyberpunk.
+- [x] Add separate color palettes for board, tray, blocks, previews, backgrounds, and particles.
+- [x] Replace the fixed space background with a theme-aware Canvas background.
+- [x] Add simple particle effects per theme: stars, dust, chips, and pixels.
+- [x] Add `SettingsViewModel` with reactive settings state from Room.
+- [x] Add `SettingsScreen` theme picker with four preview cards.
+- [x] Persist selected theme in existing Room settings.
+- [ ] Figma MCP source layouts and exported PNG/WebP/font assets.
+
+Checks:
+- [x] JVM unit tests pass (`:app:testDebugUnitTest`).
+- [x] Debug build passes (`:app:assembleDebug`).
+- [x] Theme changes apply without app restart on emulator.
+- [x] Selected theme survives force-stop/relaunch on emulator.
+- [x] Game screen uses the selected theme on emulator.
+- [ ] Particle FPS check with performance tooling.

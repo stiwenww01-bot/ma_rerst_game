@@ -16,4 +16,5 @@
     <string name="restart">Заново</string>
     <string name="no_records">Рекордов пока нет</string>
     <string name="prototype_settings">Классический серый прототип</string>
+    <string name="theme_selection">Выбор темы</string>
 </resources>

@@ -107,20 +107,20 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawCell(
 ) {
     val inset = cellSize * 0.08f
     drawRoundRect(
-        color = color.copy(alpha = 0.96f),
+        color = color.copy(alpha = color.alpha * 0.96f),
         topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
         size = Size(cellSize - inset * 2, cellSize - inset * 2),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.12f, cellSize * 0.12f)
     )
     drawRoundRect(
-        color = color.copy(alpha = 0.65f),
+        color = color.copy(alpha = color.alpha * 0.65f),
         topLeft = Offset(coord.x * cellSize + inset * 0.2f, coord.y * cellSize + inset * 0.2f),
         size = Size(cellSize - inset * 0.4f, cellSize - inset * 0.4f),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.16f, cellSize * 0.16f),
         style = Stroke(width = 7f)
     )
     drawRoundRect(
-        color = Color.White.copy(alpha = 0.58f),
+        color = Color.White.copy(alpha = color.alpha * 0.58f),
         topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
         size = Size(cellSize - inset * 2, cellSize - inset * 2),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.12f, cellSize * 0.12f),
