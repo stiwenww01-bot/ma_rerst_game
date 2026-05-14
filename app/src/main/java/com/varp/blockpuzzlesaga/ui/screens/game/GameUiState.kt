@@ -12,6 +12,7 @@ data class GameUiState(
     val dragPreview: DragPreview? = null,
     val boardOverride: Board? = null,
     val clearingCells: Set<CellCoord> = emptySet(),
+    val spaceFact: String? = null,
     val isResolvingClear: Boolean = false,
     val isLoading: Boolean = true
 )

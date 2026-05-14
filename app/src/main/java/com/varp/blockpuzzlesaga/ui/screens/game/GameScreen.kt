@@ -3,6 +3,8 @@ package com.varp.blockpuzzlesaga.ui.screens.game
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,10 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.varp.blockpuzzlesaga.R
 import com.varp.blockpuzzlesaga.ui.components.BoardBounds
@@ -68,7 +76,7 @@ fun GameScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(96.dp)
+                .height(88.dp)
         ) {
             Row(
                 modifier = Modifier.align(Alignment.TopStart),
@@ -102,6 +110,13 @@ fun GameScreen(
                 NeonIconButton(iconRes = R.drawable.space_icon_home, fallbackText = "⌂", onClick = onBack)
             }
         }
+        SpaceFactBanner(
+            fact = uiState.spaceFact,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+        )
+        Spacer(modifier = Modifier.height(6.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -184,23 +199,58 @@ fun GameScreen(
 }
 
 @Composable
+private fun SpaceFactBanner(
+    fact: String?,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        if (fact != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color(0x00183B75),
+                                Color(0xAA08315F),
+                                Color(0x00183B75)
+                            )
+                        )
+                    )
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = fact,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFFBFFBFF),
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun NeonIconButton(
     @DrawableRes iconRes: Int,
     fallbackText: String,
     onClick: () -> Unit
 ) {
-    val colors = LocalGameColors.current
-    OutlinedButton(
-        onClick = onClick,
+    Box(
         modifier = Modifier
-            .size(48.dp),
-        shape = CircleShape,
-        contentPadding = PaddingValues(0.dp),
-        border = BorderStroke(2.dp, colors.boardLine),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = colors.panelBackground.copy(alpha = 0.8f),
-            contentColor = MaterialTheme.colorScheme.onBackground
-        )
+            .size(50.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
         Image(
             painter = painterResource(iconRes),

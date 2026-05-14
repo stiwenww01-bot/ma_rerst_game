@@ -130,21 +130,17 @@ private fun MenuHeader(onSettings: () -> Unit) {
                 )
             }
         }
-        OutlinedButton(
-            onClick = onSettings,
+        Box(
             modifier = Modifier.size(54.dp),
-            shape = RoundedCornerShape(50),
-            contentPadding = PaddingValues(0.dp),
-            border = BorderStroke(2.dp, colors.boardLine),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = colors.panelBackground.copy(alpha = 0.72f),
-                contentColor = MaterialTheme.colorScheme.onBackground
-            )
+            contentAlignment = Alignment.Center
         ) {
             Image(
                 painter = painterResource(R.drawable.space_icon_settings),
                 contentDescription = stringResource(R.string.settings),
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(50))
+                    .clickable(onClick = onSettings),
                 contentScale = ContentScale.Fit
             )
         }

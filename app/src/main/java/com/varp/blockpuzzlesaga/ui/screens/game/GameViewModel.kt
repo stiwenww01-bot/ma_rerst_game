@@ -47,6 +47,7 @@ class GameViewModel(
                     dragPreview = null,
                     boardOverride = null,
                     clearingCells = emptySet(),
+                    spaceFact = null,
                     isResolvingClear = false,
                     isLoading = false
                 )
@@ -99,6 +100,7 @@ class GameViewModel(
                 viewModelScope.launch {
                     val clearingCells = result.clearedCells + result.collapsedCells
                     if (clearingCells.isNotEmpty()) {
+                        val fact = SpaceFacts[(result.state.score + clearingCells.size).mod(SpaceFacts.size)]
                         _uiState.update {
                             it.copy(
                                 gameState = result.state.copy(board = result.boardBeforeClear),
@@ -106,6 +108,7 @@ class GameViewModel(
                                 dragPreview = null,
                                 boardOverride = result.boardBeforeClear,
                                 clearingCells = clearingCells,
+                                spaceFact = fact,
                                 isResolvingClear = true
                             )
                         }
@@ -154,6 +157,17 @@ class GameViewModel(
 
     private companion object {
         const val CLEAR_HIGHLIGHT_MILLIS = 320L
+
+        val SpaceFacts = listOf(
+            "Факт: на Венере день длиннее года.",
+            "Факт: Солнце вмещает около 99,8% массы системы.",
+            "Факт: следы на Луне могут сохраняться миллионы лет.",
+            "Факт: у Юпитера больше 90 известных спутников.",
+            "Факт: свет от Солнца летит до Земли около 8 минут.",
+            "Факт: Марс красный из-за оксида железа в пыли.",
+            "Факт: Сатурн окружен кольцами из льда и камня.",
+            "Факт: МКС облетает Землю примерно за 90 минут."
+        )
     }
 
     class Factory(
