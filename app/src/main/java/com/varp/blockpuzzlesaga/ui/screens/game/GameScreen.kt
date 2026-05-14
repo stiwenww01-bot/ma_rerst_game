@@ -114,9 +114,9 @@ fun GameScreen(
             fact = uiState.spaceFact,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
+                .height(76.dp)
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -157,7 +157,7 @@ fun GameScreen(
         Button(
             onClick = onRotate,
             enabled = uiState.selectedPieceIndex != null &&
-                gameState.rotationManager.remainingRotations > 0 &&
+                gameState.rotationManager.canRotate(uiState.selectedPieceIndex) &&
                 !uiState.isResolvingClear,
             modifier = Modifier.size(58.dp),
             shape = CircleShape,
@@ -227,7 +227,7 @@ private fun SpaceFactBanner(
             ) {
                 Text(
                     text = fact,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFFBFFBFF),
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,

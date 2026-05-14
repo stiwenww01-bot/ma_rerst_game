@@ -21,6 +21,9 @@ class GameViewModel(
     private val recordsRepository: RecordsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(GameUiState())
+    private var spaceFactsDeck = SpaceFacts.shuffled()
+    private var spaceFactIndex = 0
+    private var lastSpaceFact: String? = null
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     init {
@@ -100,7 +103,7 @@ class GameViewModel(
                 viewModelScope.launch {
                     val clearingCells = result.clearedCells + result.collapsedCells
                     if (clearingCells.isNotEmpty()) {
-                        val fact = SpaceFacts[(result.state.score + clearingCells.size).mod(SpaceFacts.size)]
+                        val fact = nextSpaceFact()
                         _uiState.update {
                             it.copy(
                                 gameState = result.state.copy(board = result.boardBeforeClear),
@@ -155,18 +158,54 @@ class GameViewModel(
         }
     }
 
+    private fun nextSpaceFact(): String {
+        if (spaceFactIndex >= spaceFactsDeck.size) {
+            spaceFactsDeck = SpaceFacts.shuffled()
+            spaceFactIndex = 0
+            if (spaceFactsDeck.firstOrNull() == lastSpaceFact && spaceFactsDeck.size > 1) {
+                spaceFactsDeck = spaceFactsDeck.drop(1) + spaceFactsDeck.first()
+            }
+        }
+        val fact = spaceFactsDeck[spaceFactIndex]
+        spaceFactIndex += 1
+        lastSpaceFact = fact
+        return fact
+    }
+
     private companion object {
         const val CLEAR_HIGHLIGHT_MILLIS = 320L
 
         val SpaceFacts = listOf(
-            "Факт: на Венере день длиннее года.",
-            "Факт: Солнце вмещает около 99,8% массы системы.",
-            "Факт: следы на Луне могут сохраняться миллионы лет.",
-            "Факт: у Юпитера больше 90 известных спутников.",
-            "Факт: свет от Солнца летит до Земли около 8 минут.",
-            "Факт: Марс красный из-за оксида железа в пыли.",
-            "Факт: Сатурн окружен кольцами из льда и камня.",
-            "Факт: МКС облетает Землю примерно за 90 минут."
+            "На Венере день длиннее года.",
+            "Солнце держит около 99,8% массы системы.",
+            "Следы на Луне могут жить миллионы лет.",
+            "У Юпитера больше 90 известных спутников.",
+            "Свет Солнца летит к Земле около 8 минут.",
+            "Марс красный из-за оксида железа в пыли.",
+            "Кольца Сатурна состоят из льда и камня.",
+            "МКС облетает Землю примерно за 90 минут.",
+            "Луна каждый год отдаляется примерно на 4 см.",
+            "На Нептуне дуют самые быстрые ветры планет.",
+            "Один год на Меркурии длится 88 земных дней.",
+            "Уран вращается почти лежа на боку.",
+            "Плутон меньше земной Луны.",
+            "Кометы оставляют хвосты из газа и пыли.",
+            "Млечный Путь содержит сотни миллиардов звезд.",
+            "Черная дыра не светит, но видна по влиянию.",
+            "Скафандр защищает от вакуума и перепадов тепла.",
+            "Первый спутник Земли запустили в 1957 году.",
+            "На Луне нет ветра и привычной погоды.",
+            "Ганимед больше планеты Меркурий.",
+            "Титан имеет плотную атмосферу.",
+            "На Марсе есть крупнейший вулкан системы.",
+            "Астероиды часто богаты металлами и камнем.",
+            "Полярные сияния бывают и на других планетах.",
+            "В космосе звук не идет через вакуум.",
+            "Звезды рождаются в облаках газа и пыли.",
+            "Белые карлики остывают миллиарды лет.",
+            "Сутки на Юпитере длятся около 10 часов.",
+            "На Венере облака содержат серную кислоту.",
+            "Лед есть в кратерах у полюсов Луны."
         )
     }
 

@@ -68,11 +68,11 @@ fun BoardCanvas(
 
         dragPreview?.cells?.forEach { coord ->
             if (coord.x in 0 until Board.SIZE && coord.y in 0 until Board.SIZE) {
-                drawCell(
+                drawPlacementPreviewCell(
                     coord = coord,
                     cellSize = cellSize,
                     color = if (dragPreview.isValid) {
-                        colors.piecePalette[dragPreview.colorIndex.mod(colors.piecePalette.size)].copy(alpha = 0.78f)
+                        colors.piecePalette[dragPreview.colorIndex.mod(colors.piecePalette.size)]
                     } else {
                         colors.previewInvalid
                     }
@@ -114,6 +114,37 @@ fun BoardCanvas(
             }
         }
     }
+}
+
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawPlacementPreviewCell(
+    coord: CellCoord,
+    cellSize: Float,
+    color: Color
+) {
+    val inset = cellSize * 0.12f
+    val topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset)
+    val size = Size(cellSize - inset * 2, cellSize - inset * 2)
+    val radius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.14f, cellSize * 0.14f)
+    drawRoundRect(
+        color = color.copy(alpha = 0.05f),
+        topLeft = topLeft,
+        size = size,
+        cornerRadius = radius
+    )
+    drawRoundRect(
+        color = color.copy(alpha = 1f),
+        topLeft = topLeft,
+        size = size,
+        cornerRadius = radius,
+        style = Stroke(width = 4.5f)
+    )
+    drawRoundRect(
+        color = Color.White.copy(alpha = 0.58f),
+        topLeft = Offset(topLeft.x + inset * 0.45f, topLeft.y + inset * 0.45f),
+        size = Size(size.width - inset * 0.9f, size.height - inset * 0.9f),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.1f, cellSize * 0.1f),
+        style = Stroke(width = 1.6f)
+    )
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawClearingCell(

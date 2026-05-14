@@ -12,7 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         SettingsEntity::class,
         StatisticsEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -62,6 +62,14 @@ abstract class AppDatabase : RoomDatabase() {
                         PRIMARY KEY(`id`)
                     )
                     """.trimIndent()
+                )
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `game_state` ADD COLUMN `rotatedPieceIndicesJson` TEXT NOT NULL DEFAULT '[]'"
                 )
             }
         }

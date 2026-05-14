@@ -210,20 +210,43 @@ class GameLogicTest {
 
     @Test
     fun rotationManagerRotatesAndDecrementsCounter() {
-        val result = RotationManager().rotate(PieceGenerator.l)
+        val result = RotationManager().rotate(PieceGenerator.l, pieceIndex = 0)
 
         assertTrue(result.rotated)
         assertEquals(2, result.manager.remainingRotations)
+        assertEquals(setOf(0), result.manager.rotatedPieceIndices)
         assertNotEquals(PieceGenerator.l.cells, result.piece.cells)
     }
 
     @Test
-    fun rotationManagerDoesNothingWhenCounterIsZero() {
-        val result = RotationManager(remainingRotations = 0).rotate(PieceGenerator.l)
+    fun rotationManagerRotatesSamePieceWithoutDecrementingAgain() {
+        val first = RotationManager().rotate(PieceGenerator.l, pieceIndex = 0)
+        val second = first.manager.rotate(first.piece, pieceIndex = 0)
+
+        assertTrue(second.rotated)
+        assertEquals(2, second.manager.remainingRotations)
+        assertEquals(setOf(0), second.manager.rotatedPieceIndices)
+    }
+
+    @Test
+    fun rotationManagerDoesNothingForNewPieceWhenCounterIsZero() {
+        val result = RotationManager(remainingRotations = 0).rotate(PieceGenerator.l, pieceIndex = 0)
 
         assertFalse(result.rotated)
         assertEquals(PieceGenerator.l, result.piece)
         assertEquals(0, result.manager.remainingRotations)
+    }
+
+    @Test
+    fun rotationManagerStillRotatesPaidPieceWhenCounterIsZero() {
+        val result = RotationManager(
+            remainingRotations = 0,
+            rotatedPieceIndices = setOf(0)
+        ).rotate(PieceGenerator.l, pieceIndex = 0)
+
+        assertTrue(result.rotated)
+        assertEquals(0, result.manager.remainingRotations)
+        assertEquals(setOf(0), result.manager.rotatedPieceIndices)
     }
 
     @Test
@@ -320,7 +343,30 @@ class GameLogicTest {
         val rotated = state.rotatePiece(0)
 
         assertEquals(2, rotated.rotationManager.remainingRotations)
+        assertEquals(setOf(0), rotated.rotationManager.rotatedPieceIndices)
         assertNotEquals(state.availablePieces[0]?.cells, rotated.availablePieces[0]?.cells)
+    }
+
+    @Test
+    fun gameStateRotatesSamePieceRepeatedlyForOneCharge() {
+        val state = GameState(availablePieces = listOf(PieceGenerator.l, null, null))
+
+        val rotatedTwice = state.rotatePiece(0).rotatePiece(0)
+
+        assertEquals(2, rotatedTwice.rotationManager.remainingRotations)
+        assertEquals(setOf(0), rotatedTwice.rotationManager.rotatedPieceIndices)
+        assertNotEquals(state.availablePieces[0]?.cells, rotatedTwice.availablePieces[0]?.cells)
+    }
+
+    @Test
+    fun gameStateReleasesPaidRotationSlotWhenPieceIsPlaced() {
+        val state = GameState(availablePieces = listOf(PieceGenerator.l, null, null))
+            .rotatePiece(0)
+
+        val result = state.placePiece(0, 0, 0) as MoveResult.Placed
+
+        assertEquals(2, result.state.rotationManager.remainingRotations)
+        assertTrue(result.state.rotationManager.rotatedPieceIndices.isEmpty())
     }
 
     @Test

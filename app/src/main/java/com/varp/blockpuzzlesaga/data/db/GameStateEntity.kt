@@ -9,6 +9,7 @@ data class GameStateEntity(
     val boardJson: String,
     val availablePiecesJson: String,
     val comboTrackerJson: String,
+    val rotatedPieceIndicesJson: String = "[]",
     val score: Int,
     val remainingRotations: Int,
     val gameOver: Boolean,

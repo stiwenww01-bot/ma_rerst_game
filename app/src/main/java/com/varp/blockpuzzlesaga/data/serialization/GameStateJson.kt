@@ -25,6 +25,7 @@ class GameStateJson(
             boardJson = json.encodeToString(state.board.toDto()),
             availablePiecesJson = json.encodeToString(state.availablePieces.map { it?.toDto() }),
             comboTrackerJson = json.encodeToString(state.comboTracker.toDto()),
+            rotatedPieceIndicesJson = json.encodeToString(state.rotationManager.rotatedPieceIndices.toList()),
             score = state.score,
             remainingRotations = state.rotationManager.remainingRotations,
             gameOver = state.gameOver,
@@ -39,7 +40,10 @@ class GameStateJson(
                 .map { it?.toDomain() },
             score = entity.score,
             comboTracker = json.decodeFromString<ComboTrackerDto>(entity.comboTrackerJson).toDomain(),
-            rotationManager = RotationManager(entity.remainingRotations),
+            rotationManager = RotationManager(
+                remainingRotations = entity.remainingRotations,
+                rotatedPieceIndices = json.decodeFromString<List<Int>>(entity.rotatedPieceIndicesJson).toSet()
+            ),
             gameOver = entity.gameOver
         )
     }

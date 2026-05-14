@@ -46,6 +46,7 @@ data class GameState(
             availablePieces = refreshedPieces,
             score = score + addedScore,
             comboTracker = comboUpdate.tracker,
+            rotationManager = rotationManager.releasePiece(index),
             gameOver = false
         ).withGameOverFlag()
 
@@ -61,7 +62,7 @@ data class GameState(
 
     fun rotatePiece(index: Int): GameState {
         val piece = availablePieces.getOrNull(index) ?: return this
-        val result = rotationManager.rotate(piece)
+        val result = rotationManager.rotate(piece, index)
         if (!result.rotated) return this
 
         val updatedPieces = availablePieces.toMutableList().also { it[index] = result.piece }

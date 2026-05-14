@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.varp.blockpuzzlesaga.domain.model.Piece
@@ -123,8 +124,10 @@ private fun DraggablePiece(
                     onDrag = { change, dragAmount ->
                         change.consume()
                         dragOffset += dragAmount
-                        val rootPosition = coordinates?.localToRoot(change.position)?.let { root ->
-                            Offset(root.x, root.y - dragLiftOffset)
+                        val rootPosition = coordinates?.let { layoutCoordinates ->
+                            layoutCoordinates.positionInRoot() +
+                                pieceAnchorCenterLocal(piece, anchorCell, layoutCoordinates) +
+                                dragOffset
                         }
                         val cell = rootPosition?.let { root ->
                             boardBounds?.let { bounds ->
@@ -155,9 +158,9 @@ private fun DraggablePiece(
                 .graphicsLayer {
                     translationX = dragOffset.x
                     translationY = dragOffset.y
-                    scaleX = if (isDragging) 1.04f else 1f
-                    scaleY = if (isDragging) 1.04f else 1f
-                    shadowElevation = if (isDragging) 16.dp.toPx() else 0f
+                    scaleX = 1f
+                    scaleY = 1f
+                    shadowElevation = 0f
                 }
         )
     }
@@ -185,4 +188,22 @@ private fun pieceAnchorCell(
         val dy = cell.y - rawY
         dx * dx + dy * dy
     }
+}
+
+private fun pieceAnchorCenterLocal(
+    piece: Piece,
+    anchorCell: com.varp.blockpuzzlesaga.domain.model.CellCoord,
+    coordinates: LayoutCoordinates
+): Offset {
+    val size = coordinates.size
+    val maxX = piece.cells.maxOf { it.x } + 1
+    val maxY = piece.cells.maxOf { it.y } + 1
+    val grid = maxOf(maxX, maxY, 3)
+    val cellSize = minOf(size.width, size.height).toFloat() / grid
+    val left = (size.width - cellSize * maxX) / 2f
+    val top = (size.height - cellSize * maxY) / 2f
+    return Offset(
+        x = left + (anchorCell.x + 0.5f) * cellSize,
+        y = top + (anchorCell.y + 0.5f) * cellSize
+    )
 }

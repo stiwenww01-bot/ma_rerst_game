@@ -178,6 +178,46 @@ class AppDatabaseTest {
         }
     }
 
+    @Test
+    fun migrationTwoToThreeAddsRotatedPieceIndices() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name("migration-stage-three.db")
+                .callback(object : SupportSQLiteOpenHelper.Callback(2) {
+                    override fun onCreate(db: SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+                })
+                .build()
+        )
+
+        try {
+            val db = helper.writableDatabase
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `game_state` (
+                    `id` INTEGER NOT NULL,
+                    `boardJson` TEXT NOT NULL,
+                    `availablePiecesJson` TEXT NOT NULL,
+                    `comboTrackerJson` TEXT NOT NULL,
+                    `score` INTEGER NOT NULL,
+                    `remainingRotations` INTEGER NOT NULL,
+                    `gameOver` INTEGER NOT NULL,
+                    `updatedAtMillis` INTEGER NOT NULL,
+                    PRIMARY KEY(`id`)
+                )
+                """.trimIndent()
+            )
+
+            AppDatabase.MIGRATION_2_3.migrate(db)
+
+            assertTrue(db.hasColumn("game_state", "rotatedPieceIndicesJson"))
+        } finally {
+            helper.close()
+            context.deleteDatabase("migration-stage-three.db")
+        }
+    }
+
     private suspend fun withDatabase(block: suspend (AppDatabase) -> Unit) {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
@@ -198,5 +238,15 @@ class AppDatabaseTest {
         ).use { cursor ->
             return cursor.moveToFirst()
         }
+    }
+
+    private fun SupportSQLiteDatabase.hasColumn(tableName: String, columnName: String): Boolean {
+        query("PRAGMA table_info(`$tableName`)").use { cursor ->
+            val nameIndex = cursor.getColumnIndex("name")
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == columnName) return true
+            }
+        }
+        return false
     }
 }
