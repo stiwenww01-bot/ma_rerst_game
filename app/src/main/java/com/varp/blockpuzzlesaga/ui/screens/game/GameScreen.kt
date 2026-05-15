@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -44,6 +47,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.varp.blockpuzzlesaga.R
+import com.varp.blockpuzzlesaga.domain.model.Board
+import com.varp.blockpuzzlesaga.domain.model.CellCoord
 import com.varp.blockpuzzlesaga.ui.components.BoardBounds
 import com.varp.blockpuzzlesaga.ui.components.BoardCanvas
 import com.varp.blockpuzzlesaga.ui.components.PieceTray
@@ -115,8 +120,6 @@ fun GameScreen(
         }
         SpaceFactBanner(
             fact = uiState.spaceFact,
-            spinBonusText = uiState.spinBonusText,
-            comboText = uiState.comboText,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(76.dp)
@@ -135,13 +138,21 @@ fun GameScreen(
                 drawBoardChrome = true,
                 modifier = Modifier
                     .matchParentSize()
-                    .padding(start = 28.dp, top = 34.dp, end = 28.dp, bottom = 34.dp)
+                    .padding(BoardInnerPadding)
             )
             Image(
                 painter = painterResource(R.drawable.space_board_frame_overlay),
                 contentDescription = null,
                 modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.FillBounds
+            )
+            BoardFeedbackOverlay(
+                feedbackCells = uiState.feedbackCells,
+                spinBonusText = uiState.spinBonusText,
+                comboText = uiState.comboText,
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(BoardInnerPadding)
             )
         }
         Spacer(modifier = Modifier.height(14.dp))
@@ -206,8 +217,6 @@ fun GameScreen(
 @Composable
 private fun SpaceFactBanner(
     fact: String?,
-    spinBonusText: String?,
-    comboText: String?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -243,17 +252,41 @@ private fun SpaceFactBanner(
                 )
             }
         }
-        if (spinBonusText != null || comboText != null) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 18.dp, bottom = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                comboText?.let { BonusChip(text = it) }
-                spinBonusText?.let { BonusChip(text = it) }
-            }
+    }
+}
+
+@Composable
+private fun BoardFeedbackOverlay(
+    feedbackCells: Set<CellCoord>,
+    spinBonusText: String?,
+    comboText: String?,
+    modifier: Modifier = Modifier
+) {
+    if (feedbackCells.isEmpty() || (spinBonusText == null && comboText == null)) return
+
+    BoxWithConstraints(modifier = modifier) {
+        val minX = feedbackCells.minOf { it.x }
+        val maxX = feedbackCells.maxOf { it.x }
+        val minY = feedbackCells.minOf { it.y }
+        val maxY = feedbackCells.maxOf { it.y }
+        val cellWidth = maxWidth / Board.SIZE
+        val cellHeight = maxHeight / Board.SIZE
+        val centerX = cellWidth * ((minX + maxX + 1) / 2f)
+        val centerY = cellHeight * ((minY + maxY + 1) / 2f)
+        val popupWidth = 150.dp
+        val popupHeight = if (spinBonusText != null && comboText != null) 62.dp else 32.dp
+        val x = (centerX - popupWidth / 2).coerceIn(2.dp, maxWidth - popupWidth - 2.dp)
+        val y = (centerY - popupHeight / 2).coerceIn(2.dp, maxHeight - popupHeight - 2.dp)
+
+        Column(
+            modifier = Modifier
+                .offset(x = x, y = y)
+                .width(popupWidth),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            comboText?.let { BonusChip(text = it) }
+            spinBonusText?.let { BonusChip(text = it) }
         }
     }
 }
@@ -284,6 +317,8 @@ private fun BonusChip(text: String) {
         )
     }
 }
+
+private val BoardInnerPadding = 34.dp
 
 @Composable
 private fun NeonIconButton(

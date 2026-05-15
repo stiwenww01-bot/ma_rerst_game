@@ -52,6 +52,7 @@ class GameViewModel(
                     dragPreview = null,
                     boardOverride = null,
                     clearingCells = emptySet(),
+                    feedbackCells = emptySet(),
                     spaceFact = null,
                     spinBonusText = null,
                     comboText = null,
@@ -130,6 +131,7 @@ class GameViewModel(
                                 dragPreview = null,
                                 boardOverride = result.boardBeforeClear,
                                 clearingCells = clearingCells,
+                                feedbackCells = clearingCells,
                                 spaceFact = fact,
                                 spinBonusText = spinBonusText,
                                 comboText = comboText,
@@ -153,6 +155,11 @@ class GameViewModel(
                             dragPreview = null,
                             boardOverride = null,
                             clearingCells = emptySet(),
+                            feedbackCells = if (spinBonusText != null || comboText != null) {
+                                it.feedbackCells
+                            } else {
+                                emptySet()
+                            },
                             spinBonusText = spinBonusText,
                             comboText = comboText,
                             soundEvent = placeSound?.first ?: it.soundEvent,
@@ -164,6 +171,7 @@ class GameViewModel(
                         delay(BONUS_MESSAGE_MILLIS - CLEAR_HIGHLIGHT_MILLIS)
                         _uiState.update {
                             it.copy(
+                                feedbackCells = emptySet(),
                                 spinBonusText = null,
                                 comboText = null
                             )
@@ -190,6 +198,7 @@ class GameViewModel(
                     dragPreview = null,
                     boardOverride = null,
                     clearingCells = emptySet(),
+                    feedbackCells = emptySet(),
                     spinBonusText = null,
                     comboText = null,
                     soundEvent = sound.first,

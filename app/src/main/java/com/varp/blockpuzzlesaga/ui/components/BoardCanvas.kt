@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntSize
@@ -39,78 +40,83 @@ fun BoardCanvas(
             .aspectRatio(1f)
             .onGloballyPositioned { coordinates ->
                 val position = coordinates.positionInRoot()
+                val minDimension = coordinates.size.minDimension().toFloat()
                 onBoundsChanged(
                     BoardBounds(
-                        left = position.x,
-                        top = position.y,
-                        size = coordinates.size.minDimension().toFloat()
+                        left = position.x + (coordinates.size.width - minDimension) / 2f,
+                        top = position.y + (coordinates.size.height - minDimension) / 2f,
+                        size = minDimension
                     )
                 )
             }
     ) {
         val boardSize = size.minDimension
         val cellSize = boardSize / Board.SIZE
+        val boardLeft = (size.width - boardSize) / 2f
+        val boardTop = (size.height - boardSize) / 2f
 
-        if (drawBoardChrome) {
-            drawRect(
-                color = colors.boardBackground,
-                size = Size(boardSize, boardSize)
-            )
-        }
-
-        board.cells.forEach { (coord, placedCell) ->
-            drawCell(
-                coord = coord,
-                cellSize = cellSize,
-                color = colors.piecePalette[placedCell.colorIndex.mod(colors.piecePalette.size)]
-            )
-        }
-
-        dragPreview?.cells?.forEach { coord ->
-            if (coord.x in 0 until Board.SIZE && coord.y in 0 until Board.SIZE) {
-                drawPlacementPreviewCell(
-                    coord = coord,
-                    cellSize = cellSize,
-                    color = if (dragPreview.isValid) {
-                        colors.piecePalette[dragPreview.colorIndex.mod(colors.piecePalette.size)]
-                    } else {
-                        colors.previewInvalid
-                    }
+        translate(left = boardLeft, top = boardTop) {
+            if (drawBoardChrome) {
+                drawRect(
+                    color = colors.boardBackground,
+                    size = Size(boardSize, boardSize)
                 )
             }
-        }
 
-        clearingCells.forEach { coord ->
-            if (coord.x in 0 until Board.SIZE && coord.y in 0 until Board.SIZE) {
-                drawClearingCell(
+            board.cells.forEach { (coord, placedCell) ->
+                drawCell(
                     coord = coord,
                     cellSize = cellSize,
-                    color = colors.clearHighlight
+                    color = colors.piecePalette[placedCell.colorIndex.mod(colors.piecePalette.size)]
                 )
             }
-        }
 
-        if (drawBoardChrome) {
-            drawRect(
-                color = colors.boardLine.copy(alpha = 0.35f),
-                size = Size(boardSize, boardSize),
-                style = Stroke(width = 10f)
-            )
-            for (index in 0..Board.SIZE) {
-                val width = if (index % 3 == 0) 3f else 1f
-                val offset = index * cellSize
-                drawLine(
-                    color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
-                    start = Offset(offset, 0f),
-                    end = Offset(offset, boardSize),
-                    strokeWidth = width
+            dragPreview?.cells?.forEach { coord ->
+                if (coord.x in 0 until Board.SIZE && coord.y in 0 until Board.SIZE) {
+                    drawPlacementPreviewCell(
+                        coord = coord,
+                        cellSize = cellSize,
+                        color = if (dragPreview.isValid) {
+                            colors.piecePalette[dragPreview.colorIndex.mod(colors.piecePalette.size)]
+                        } else {
+                            colors.previewInvalid
+                        }
+                    )
+                }
+            }
+
+            clearingCells.forEach { coord ->
+                if (coord.x in 0 until Board.SIZE && coord.y in 0 until Board.SIZE) {
+                    drawClearingCell(
+                        coord = coord,
+                        cellSize = cellSize,
+                        color = colors.clearHighlight
+                    )
+                }
+            }
+
+            if (drawBoardChrome) {
+                drawRect(
+                    color = colors.boardLine.copy(alpha = 0.35f),
+                    size = Size(boardSize, boardSize),
+                    style = Stroke(width = 10f)
                 )
-                drawLine(
-                    color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
-                    start = Offset(0f, offset),
-                    end = Offset(boardSize, offset),
-                    strokeWidth = width
-                )
+                for (index in 0..Board.SIZE) {
+                    val width = if (index % 3 == 0) 3f else 1f
+                    val offset = index * cellSize
+                    drawLine(
+                        color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
+                        start = Offset(offset, 0f),
+                        end = Offset(offset, boardSize),
+                        strokeWidth = width
+                    )
+                    drawLine(
+                        color = colors.boardLine.copy(alpha = if (index % 3 == 0) 0.95f else 0.48f),
+                        start = Offset(0f, offset),
+                        end = Offset(boardSize, offset),
+                        strokeWidth = width
+                    )
+                }
             }
         }
     }
@@ -121,12 +127,12 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawPlacementPrevie
     cellSize: Float,
     color: Color
 ) {
-    val inset = cellSize * 0.12f
+    val inset = cellSize * 0.08f
     val topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset)
     val size = Size(cellSize - inset * 2, cellSize - inset * 2)
     val radius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.14f, cellSize * 0.14f)
     drawRoundRect(
-        color = color.copy(alpha = 0.05f),
+        color = color.copy(alpha = 0.2f),
         topLeft = topLeft,
         size = size,
         cornerRadius = radius
@@ -153,6 +159,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawClearingCell(
     color: Color
 ) {
     val inset = cellSize * 0.03f
+    val borderStroke = 6f
+    val borderInset = maxOf(inset, borderStroke / 2f + 0.5f)
     drawRoundRect(
         color = color.copy(alpha = 0.52f),
         topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
@@ -167,10 +175,10 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawClearingCell(
     )
     drawRoundRect(
         color = color.copy(alpha = 1f),
-        topLeft = Offset(coord.x * cellSize + inset * 0.2f, coord.y * cellSize + inset * 0.2f),
-        size = Size(cellSize - inset * 0.4f, cellSize - inset * 0.4f),
+        topLeft = Offset(coord.x * cellSize + borderInset, coord.y * cellSize + borderInset),
+        size = Size(cellSize - borderInset * 2, cellSize - borderInset * 2),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.2f, cellSize * 0.2f),
-        style = Stroke(width = 6f)
+        style = Stroke(width = borderStroke)
     )
 }
 
@@ -180,6 +188,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawCell(
     color: androidx.compose.ui.graphics.Color
 ) {
     val inset = cellSize * 0.08f
+    val glowStroke = 7f
+    val glowInset = maxOf(inset * 0.75f, glowStroke / 2f + 0.5f)
     drawRoundRect(
         color = color.copy(alpha = color.alpha * 0.96f),
         topLeft = Offset(coord.x * cellSize + inset, coord.y * cellSize + inset),
@@ -188,10 +198,10 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawCell(
     )
     drawRoundRect(
         color = color.copy(alpha = color.alpha * 0.65f),
-        topLeft = Offset(coord.x * cellSize + inset * 0.2f, coord.y * cellSize + inset * 0.2f),
-        size = Size(cellSize - inset * 0.4f, cellSize - inset * 0.4f),
+        topLeft = Offset(coord.x * cellSize + glowInset, coord.y * cellSize + glowInset),
+        size = Size(cellSize - glowInset * 2, cellSize - glowInset * 2),
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cellSize * 0.16f, cellSize * 0.16f),
-        style = Stroke(width = 7f)
+        style = Stroke(width = glowStroke)
     )
     drawRoundRect(
         color = Color.White.copy(alpha = color.alpha * 0.58f),
