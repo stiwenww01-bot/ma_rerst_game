@@ -9,8 +9,8 @@ data class SettingsEntity(
     val selectedTheme: String = THEME_SPACE,
     val soundEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
-    val sfxVolume: Float = 1f,
-    val musicVolume: Float = 0.7f
+    val sfxVolume: Float = 0.8f,
+    val musicVolume: Float = 0.45f
 ) {
     companion object {
         const val DEFAULT_ID = 1

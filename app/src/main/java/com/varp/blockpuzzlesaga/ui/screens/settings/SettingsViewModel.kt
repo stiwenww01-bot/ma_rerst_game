@@ -16,9 +16,10 @@ data class SettingsUiState(
     val selectedThemeKey: String = GameThemeId.default.storageKey,
     val soundEnabled: Boolean = true,
     val soundEffectsEnabled: Boolean = true,
+    val musicEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
     val sfxVolume: Float = 1f,
-    val musicVolume: Float = 0.7f
+    val musicVolume: Float = 0.45f
 )
 
 class SettingsViewModel(
@@ -42,7 +43,18 @@ class SettingsViewModel(
     fun setSoundEffectsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             val current = settingsRepository.getSettings()
-            settingsRepository.saveSettings(current.copy(musicVolume = if (enabled) 1f else 0f))
+            settingsRepository.saveSettings(
+                current.copy(sfxVolume = if (enabled) current.sfxVolume.coerceAtLeast(0.65f) else 0f)
+            )
+        }
+    }
+
+    fun setMusicEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            val current = settingsRepository.getSettings()
+            settingsRepository.saveSettings(
+                current.copy(musicVolume = if (enabled) current.musicVolume.coerceAtLeast(0.35f) else 0f)
+            )
         }
     }
 
@@ -60,6 +72,13 @@ class SettingsViewModel(
         }
     }
 
+    fun setMusicVolume(volume: Float) {
+        viewModelScope.launch {
+            val current = settingsRepository.getSettings()
+            settingsRepository.saveSettings(current.copy(musicVolume = volume.coerceIn(0f, 1f)))
+        }
+    }
+
     class Factory(
         private val settingsRepository: SettingsRepository
     ) : ViewModelProvider.Factory {
@@ -74,7 +93,8 @@ private fun SettingsEntity.toUiState(): SettingsUiState {
     return SettingsUiState(
         selectedThemeKey = GameThemeId.default.storageKey,
         soundEnabled = soundEnabled,
-        soundEffectsEnabled = musicVolume > 0f,
+        soundEffectsEnabled = sfxVolume > 0f,
+        musicEnabled = musicVolume > 0f,
         vibrationEnabled = vibrationEnabled,
         sfxVolume = sfxVolume,
         musicVolume = musicVolume

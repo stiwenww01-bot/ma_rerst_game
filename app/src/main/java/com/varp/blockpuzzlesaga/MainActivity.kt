@@ -1,7 +1,7 @@
 package com.varp.blockpuzzlesaga
 
-import android.media.AudioManager
-import android.media.ToneGenerator
+import android.media.MediaPlayer
+import android.media.SoundPool
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -18,6 +18,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,7 +39,6 @@ import com.varp.blockpuzzlesaga.ui.screens.settings.SettingsScreen
 import com.varp.blockpuzzlesaga.ui.screens.settings.SettingsViewModel
 import com.varp.blockpuzzlesaga.ui.theme.BlockPuzzleSagaTheme
 import com.varp.blockpuzzlesaga.ui.theme.GameBackground
-import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +79,11 @@ fun BlockPuzzleSagaApp() {
             soundEnabled = settingsState.soundEnabled,
             effectsEnabled = settingsState.soundEffectsEnabled,
             volume = settingsState.sfxVolume
+        )
+        SpaceMusicPlayer(
+            soundEnabled = settingsState.soundEnabled,
+            musicEnabled = settingsState.musicEnabled,
+            volume = settingsState.musicVolume
         )
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -137,8 +143,10 @@ fun BlockPuzzleSagaApp() {
                             uiState = settingsState,
                             onSoundEnabledChanged = settingsViewModel::setSoundEnabled,
                             onSoundEffectsEnabledChanged = settingsViewModel::setSoundEffectsEnabled,
+                            onMusicEnabledChanged = settingsViewModel::setMusicEnabled,
                             onVibrationEnabledChanged = settingsViewModel::setVibrationEnabled,
                             onSfxVolumeChanged = settingsViewModel::setSfxVolume,
+                            onMusicVolumeChanged = settingsViewModel::setMusicVolume,
                             onBack = { navController.popBackStack() }
                         )
                     }
@@ -156,30 +164,65 @@ private fun GameSoundEffectPlayer(
     effectsEnabled: Boolean,
     volume: Float
 ) {
-    val toneVolume = (volume.coerceIn(0f, 1f) * 100).roundToInt().coerceIn(0, 100)
-    val toneGenerator = remember(toneVolume) {
-        ToneGenerator(AudioManager.STREAM_MUSIC, toneVolume)
+    val context = LocalContext.current
+    var loadedCount by remember { mutableIntStateOf(0) }
+    val soundPool = remember {
+        SoundPool.Builder()
+            .setMaxStreams(5)
+            .build()
     }
-    DisposableEffect(toneGenerator) {
-        onDispose { toneGenerator.release() }
+    val soundIds = remember(soundPool) {
+        mapOf(
+            GameSoundEvent.NewGame to soundPool.load(context, R.raw.sfx_new_game, 1),
+            GameSoundEvent.Rotate to soundPool.load(context, R.raw.sfx_rotate, 1),
+            GameSoundEvent.Place to soundPool.load(context, R.raw.sfx_place, 1),
+            GameSoundEvent.Clear to soundPool.load(context, R.raw.sfx_clear, 1),
+            GameSoundEvent.Bonus to soundPool.load(context, R.raw.sfx_bonus, 1),
+            GameSoundEvent.Invalid to soundPool.load(context, R.raw.sfx_invalid, 1)
+        )
+    }
+    DisposableEffect(soundPool) {
+        soundPool.setOnLoadCompleteListener { _, _, status ->
+            if (status == 0) loadedCount += 1
+        }
+        onDispose { soundPool.release() }
     }
     LaunchedEffect(eventId) {
-        if (event == null || eventId == 0 || !soundEnabled || !effectsEnabled || toneVolume == 0) return@LaunchedEffect
-        val tone = when (event) {
-            GameSoundEvent.NewGame -> ToneGenerator.TONE_PROP_ACK
-            GameSoundEvent.Rotate -> ToneGenerator.TONE_PROP_BEEP
-            GameSoundEvent.Place -> ToneGenerator.TONE_PROP_BEEP2
-            GameSoundEvent.Clear -> ToneGenerator.TONE_PROP_PROMPT
-            GameSoundEvent.Bonus -> ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD
-            GameSoundEvent.Invalid -> ToneGenerator.TONE_PROP_NACK
+        val soundId = event?.let(soundIds::get) ?: return@LaunchedEffect
+        val playVolume = volume.coerceIn(0f, 1f) * 0.78f
+        if (eventId == 0 || !soundEnabled || !effectsEnabled || playVolume <= 0f || loadedCount == 0) {
+            return@LaunchedEffect
         }
-        val duration = when (event) {
-            GameSoundEvent.Bonus -> 180
-            GameSoundEvent.Clear -> 140
-            GameSoundEvent.Invalid -> 110
-            else -> 85
+        soundPool.play(soundId, playVolume, playVolume, 1, 0, 1f)
+    }
+}
+
+@Composable
+private fun SpaceMusicPlayer(
+    soundEnabled: Boolean,
+    musicEnabled: Boolean,
+    volume: Float
+) {
+    val context = LocalContext.current
+    val mediaPlayer = remember {
+        MediaPlayer.create(context, R.raw.music_space_ambient).apply {
+            isLooping = true
         }
-        toneGenerator.startTone(tone, duration)
+    }
+    DisposableEffect(mediaPlayer) {
+        onDispose {
+            mediaPlayer.stop()
+            mediaPlayer.release()
+        }
+    }
+    LaunchedEffect(soundEnabled, musicEnabled, volume) {
+        val musicVolume = if (soundEnabled && musicEnabled) volume.coerceIn(0f, 1f) * 0.42f else 0f
+        mediaPlayer.setVolume(musicVolume, musicVolume)
+        if (musicVolume > 0f && !mediaPlayer.isPlaying) {
+            mediaPlayer.start()
+        } else if (musicVolume <= 0f && mediaPlayer.isPlaying) {
+            mediaPlayer.pause()
+        }
     }
 }
 

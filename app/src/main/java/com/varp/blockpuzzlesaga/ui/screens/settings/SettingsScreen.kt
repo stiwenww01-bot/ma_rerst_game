@@ -28,8 +28,10 @@ fun SettingsScreen(
     uiState: SettingsUiState,
     onSoundEnabledChanged: (Boolean) -> Unit,
     onSoundEffectsEnabledChanged: (Boolean) -> Unit,
+    onMusicEnabledChanged: (Boolean) -> Unit,
     onVibrationEnabledChanged: (Boolean) -> Unit,
     onSfxVolumeChanged: (Float) -> Unit,
+    onMusicVolumeChanged: (Float) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -69,34 +71,27 @@ fun SettingsScreen(
                     onCheckedChange = onSoundEffectsEnabledChanged
                 )
                 SettingSwitchRow(
+                    label = "Музыка",
+                    checked = uiState.musicEnabled,
+                    onCheckedChange = onMusicEnabledChanged
+                )
+                SettingSwitchRow(
                     label = "Вибрация",
                     checked = uiState.vibrationEnabled,
                     onCheckedChange = onVibrationEnabledChanged
                 )
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Громкость эффектов",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "${(uiState.sfxVolume * 100).toInt()}%",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = colors.clearHighlight,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Slider(
-                        value = uiState.sfxVolume,
-                        onValueChange = onSfxVolumeChanged,
-                        valueRange = 0f..1f,
-                        enabled = uiState.soundEnabled && uiState.soundEffectsEnabled
-                    )
-                }
+                VolumeSlider(
+                    label = "Громкость эффектов",
+                    value = uiState.sfxVolume,
+                    enabled = uiState.soundEnabled && uiState.soundEffectsEnabled,
+                    onValueChange = onSfxVolumeChanged
+                )
+                VolumeSlider(
+                    label = "Громкость музыки",
+                    value = uiState.musicVolume,
+                    enabled = uiState.soundEnabled && uiState.musicEnabled,
+                    onValueChange = onMusicVolumeChanged
+                )
             }
         }
 
@@ -128,6 +123,40 @@ private fun SettingSwitchRow(
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
+private fun VolumeSlider(
+    label: String,
+    value: Float,
+    enabled: Boolean,
+    onValueChange: (Float) -> Unit
+) {
+    val colors = LocalGameColors.current
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "${(value * 100).toInt()}%",
+                style = MaterialTheme.typography.titleSmall,
+                color = colors.clearHighlight,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = 0f..1f,
+            enabled = enabled
         )
     }
 }

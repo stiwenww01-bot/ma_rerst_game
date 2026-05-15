@@ -43,7 +43,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.varp.blockpuzzlesaga.R
@@ -122,7 +121,7 @@ fun GameScreen(
             fact = uiState.spaceFact,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(76.dp)
+                .height(86.dp)
         )
         Spacer(modifier = Modifier.height(2.dp))
         Box(
@@ -225,6 +224,11 @@ private fun SpaceFactBanner(
         contentAlignment = Alignment.Center
     ) {
         if (fact != null) {
+            val factFontSize = when {
+                fact.length > 64 -> 13.sp
+                fact.length > 52 -> 14.sp
+                else -> 15.sp
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -238,16 +242,16 @@ private fun SpaceFactBanner(
                             )
                         )
                     )
-                    .padding(horizontal = 12.dp, vertical = 5.dp),
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = fact,
-                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = factFontSize,
+                    lineHeight = (factFontSize.value + 3).sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 3,
                     textAlign = TextAlign.Center
                 )
             }
