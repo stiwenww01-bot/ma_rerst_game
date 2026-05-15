@@ -125,7 +125,9 @@ private fun DraggablePiece(
                         change.consume()
                         dragOffset += dragAmount
                         val rootPosition = coordinates?.let { layoutCoordinates ->
-                            layoutCoordinates.positionInRoot() + change.position + Offset(0f, -dragLiftOffset)
+                            layoutCoordinates.positionInRoot() +
+                                pieceAnchorCenterLocal(piece, anchorCell, layoutCoordinates) +
+                                dragOffset
                         }
                         val cell = rootPosition?.let { root ->
                             boardBounds?.let { bounds ->
@@ -186,4 +188,22 @@ private fun pieceAnchorCell(
         val dy = cell.y - rawY
         dx * dx + dy * dy
     }
+}
+
+private fun pieceAnchorCenterLocal(
+    piece: Piece,
+    anchorCell: com.varp.blockpuzzlesaga.domain.model.CellCoord,
+    coordinates: LayoutCoordinates
+): Offset {
+    val size = coordinates.size
+    val maxX = piece.cells.maxOf { it.x } + 1
+    val maxY = piece.cells.maxOf { it.y } + 1
+    val grid = maxOf(maxX, maxY, 3)
+    val cellSize = minOf(size.width, size.height).toFloat() / grid
+    val left = (size.width - cellSize * maxX) / 2f
+    val top = (size.height - cellSize * maxY) / 2f
+    return Offset(
+        x = left + (anchorCell.x + 0.5f) * cellSize,
+        y = top + (anchorCell.y + 0.5f) * cellSize
+    )
 }
