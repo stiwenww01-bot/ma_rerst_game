@@ -66,7 +66,7 @@ fun BlockPuzzleSagaApp() {
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
 
-    BlockPuzzleSagaTheme(selectedThemeKey = settingsState.selectedThemeKey) {
+    BlockPuzzleSagaTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = Color.Transparent,
@@ -123,7 +123,10 @@ fun BlockPuzzleSagaApp() {
                     composable(Route.Settings.path) {
                         SettingsScreen(
                             uiState = settingsState,
-                            onThemeSelected = settingsViewModel::selectTheme,
+                            onSoundEnabledChanged = settingsViewModel::setSoundEnabled,
+                            onSoundEffectsEnabledChanged = settingsViewModel::setSoundEffectsEnabled,
+                            onVibrationEnabledChanged = settingsViewModel::setVibrationEnabled,
+                            onSfxVolumeChanged = settingsViewModel::setSfxVolume,
                             onBack = { navController.popBackStack() }
                         )
                     }

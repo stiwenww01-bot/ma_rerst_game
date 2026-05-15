@@ -258,6 +258,24 @@ class GameLogicTest {
     }
 
     @Test
+    fun pieceGeneratorUsesThreePieceColors() {
+        val generator = PieceGenerator(Random(4))
+        val colors = (0 until 20).flatMap { generator.generateTray() }.map { it.colorIndex }.toSet()
+
+        assertTrue(colors.all { it in 0 until PieceGenerator.COLOR_COUNT })
+        assertTrue(colors.size <= PieceGenerator.COLOR_COUNT)
+    }
+
+    @Test
+    fun pieceGeneratorDifficultyGrowsEveryThreeThousandAndCaps() {
+        val generator = PieceGenerator(Random(1))
+
+        assertEquals(0f, generator.difficultyModifier(2_999), 0.001f)
+        assertEquals(0.10f, generator.difficultyModifier(3_000), 0.001f)
+        assertEquals(0.60f, generator.difficultyModifier(60_000), 0.001f)
+    }
+
+    @Test
     fun pieceGeneratorContainsAtLeastTwentyFiveTemplates() {
         assertTrue(PieceGenerator(Random(1)).allTemplates().size >= 25)
     }
@@ -319,6 +337,49 @@ class GameLogicTest {
         assertTrue(CellCoord(8, 0) in result.clearedCells)
         assertTrue(CellCoord(8, 0) in result.boardBeforeClear.cells)
         assertTrue(result.state.board.cells.isEmpty())
+    }
+
+    @Test
+    fun gameStateAwardsBonusRotationForSingleColorCompletedGroup() {
+        val existing = (0..7).map { CellCoord(it, 0) }
+        val state = GameState(
+            board = filledBoard(existing, colorIndex = 1),
+            availablePieces = listOf(PieceGenerator.single.copy(colorIndex = 1), null, null)
+        )
+
+        val result = state.placePiece(0, 8, 0) as MoveResult.Placed
+
+        assertTrue(result.spinBonusAwarded)
+        assertEquals(4, result.state.rotationManager.remainingRotations)
+    }
+
+    @Test
+    fun gameStateDoesNotAwardBonusRotationForMixedColorCompletedGroup() {
+        val existing = (0..7).associate { x -> CellCoord(x, 0) to x % PieceGenerator.COLOR_COUNT }
+        val state = GameState(
+            board = coloredBoard(existing),
+            availablePieces = listOf(PieceGenerator.single.copy(colorIndex = 2), null, null)
+        )
+
+        val result = state.placePiece(0, 8, 0) as MoveResult.Placed
+
+        assertFalse(result.spinBonusAwarded)
+        assertEquals(3, result.state.rotationManager.remainingRotations)
+    }
+
+    @Test
+    fun gameStateAwardsOnlyOneBonusRotationForMultipleSingleColorGroups() {
+        val row = (1 until Board.SIZE).map { CellCoord(it, 0) }
+        val column = (1 until Board.SIZE).map { CellCoord(0, it) }
+        val state = GameState(
+            board = filledBoard(row + column, colorIndex = 2),
+            availablePieces = listOf(PieceGenerator.single.copy(colorIndex = 2), null, null)
+        )
+
+        val result = state.placePiece(0, 0, 0) as MoveResult.Placed
+
+        assertTrue(result.spinBonusAwarded)
+        assertEquals(4, result.state.rotationManager.remainingRotations)
     }
 
     @Test
@@ -398,9 +459,16 @@ class GameLogicTest {
         return TrackedPlacement(type, id, cells.toSet())
     }
 
-    private fun filledBoard(coords: Iterable<CellCoord>): Board {
+    private fun filledBoard(coords: Iterable<CellCoord>, colorIndex: Int = 0): Board {
         val cells = coords.associateWith {
-            PlacedCell(pieceType = PieceType.SINGLE, placementId = 1L, colorIndex = 0)
+            PlacedCell(pieceType = PieceType.SINGLE, placementId = 1L, colorIndex = colorIndex)
+        }
+        return Board(cells = cells)
+    }
+
+    private fun coloredBoard(colorsByCoord: Map<CellCoord, Int>): Board {
+        val cells = colorsByCoord.mapValues { (_, colorIndex) ->
+            PlacedCell(pieceType = PieceType.SINGLE, placementId = 1L, colorIndex = colorIndex)
         }
         return Board(cells = cells)
     }

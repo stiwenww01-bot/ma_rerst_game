@@ -95,15 +95,9 @@ private val SpaceGameColors = GameColors(
     particleColor = Color.White,
     particleStyle = ParticleStyle.Stars,
     piecePalette = listOf(
-        Color(0xFF9C27FF),
-        Color(0xFF5D5CFF),
-        Color(0xFF00D4FF),
-        Color(0xFFE040FB),
-        Color(0xFFFF2D75),
-        Color(0xFF7C4DFF),
-        Color(0xFF40C4FF),
-        Color(0xFFB388FF),
-        Color(0xFF18FFFF)
+        Color(0xFF22E6F0),
+        Color(0xFF8A45F7),
+        Color(0xFFFF2D75)
     )
 )
 

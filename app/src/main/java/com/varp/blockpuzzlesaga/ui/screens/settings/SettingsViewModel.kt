@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 data class SettingsUiState(
     val selectedThemeKey: String = GameThemeId.default.storageKey,
     val soundEnabled: Boolean = true,
+    val soundEffectsEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
     val sfxVolume: Float = 1f,
     val musicVolume: Float = 0.7f
@@ -31,10 +32,31 @@ class SettingsViewModel(
             initialValue = SettingsUiState()
         )
 
-    fun selectTheme(themeId: GameThemeId) {
+    fun setSoundEnabled(enabled: Boolean) {
         viewModelScope.launch {
             val current = settingsRepository.getSettings()
-            settingsRepository.saveSettings(current.copy(selectedTheme = themeId.storageKey))
+            settingsRepository.saveSettings(current.copy(soundEnabled = enabled))
+        }
+    }
+
+    fun setSoundEffectsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            val current = settingsRepository.getSettings()
+            settingsRepository.saveSettings(current.copy(musicVolume = if (enabled) 1f else 0f))
+        }
+    }
+
+    fun setVibrationEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            val current = settingsRepository.getSettings()
+            settingsRepository.saveSettings(current.copy(vibrationEnabled = enabled))
+        }
+    }
+
+    fun setSfxVolume(volume: Float) {
+        viewModelScope.launch {
+            val current = settingsRepository.getSettings()
+            settingsRepository.saveSettings(current.copy(sfxVolume = volume.coerceIn(0f, 1f)))
         }
     }
 
@@ -50,8 +72,9 @@ class SettingsViewModel(
 
 private fun SettingsEntity.toUiState(): SettingsUiState {
     return SettingsUiState(
-        selectedThemeKey = selectedTheme,
+        selectedThemeKey = GameThemeId.default.storageKey,
         soundEnabled = soundEnabled,
+        soundEffectsEnabled = musicVolume > 0f,
         vibrationEnabled = vibrationEnabled,
         sfxVolume = sfxVolume,
         musicVolume = musicVolume

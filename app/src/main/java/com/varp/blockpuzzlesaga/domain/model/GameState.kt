@@ -32,21 +32,28 @@ data class GameState(
             ?.let { placement.board.clearPlacements(it.placementIds) }
             ?: placement.board
         val clearResult = LineChecker.clearCompletedGroups(boardAfterCollapse)
-        val nextPieces = availablePieces.toMutableList().also { it[index] = null }
-        val refreshedPieces = if (nextPieces.all { it == null }) {
-            generator.generateTray()
-        } else {
-            nextPieces
+        val spinBonusAwarded = clearResult.groups.any { group ->
+            val groupColors = group.cells.mapNotNull { boardAfterCollapse.cells[it]?.colorIndex }.toSet()
+            groupColors.size == 1 && groupColors.isNotEmpty()
         }
         val addedScore = ScoreCalculator.placementScore(piece.size) +
             ScoreCalculator.clearScore(clearResult.groups.size) +
             ScoreCalculator.collapseScore(comboUpdate.collapse?.cells?.size ?: 0)
+        val nextPieces = availablePieces.toMutableList().also { it[index] = null }
+        val refreshedPieces = if (nextPieces.all { it == null }) {
+            generator.generateTray(score + addedScore)
+        } else {
+            nextPieces
+        }
+        val nextRotationManager = rotationManager.releasePiece(index).let { manager ->
+            if (spinBonusAwarded) manager.addBonusRotation() else manager
+        }
         val nextState = copy(
             board = clearResult.board,
             availablePieces = refreshedPieces,
             score = score + addedScore,
             comboTracker = comboUpdate.tracker,
-            rotationManager = rotationManager.releasePiece(index),
+            rotationManager = nextRotationManager,
             gameOver = false
         ).withGameOverFlag()
 
@@ -56,7 +63,8 @@ data class GameState(
             placedCells = placement.cells,
             clearedCells = clearResult.clearedCells,
             collapsedCells = comboUpdate.collapse?.cells.orEmpty(),
-            addedScore = addedScore
+            addedScore = addedScore,
+            spinBonusAwarded = spinBonusAwarded
         )
     }
 
@@ -86,7 +94,8 @@ sealed class MoveResult {
         val placedCells: Set<CellCoord>,
         val clearedCells: Set<CellCoord>,
         val collapsedCells: Set<CellCoord>,
-        val addedScore: Int
+        val addedScore: Int,
+        val spinBonusAwarded: Boolean
     ) : MoveResult()
 
     data class Invalid(

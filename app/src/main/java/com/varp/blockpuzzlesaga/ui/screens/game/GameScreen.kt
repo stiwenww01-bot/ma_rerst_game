@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.varp.blockpuzzlesaga.R
 import com.varp.blockpuzzlesaga.ui.components.BoardBounds
 import com.varp.blockpuzzlesaga.ui.components.BoardCanvas
@@ -76,7 +77,7 @@ fun GameScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(88.dp)
+                .height(104.dp)
         ) {
             Row(
                 modifier = Modifier.align(Alignment.TopStart),
@@ -97,9 +98,11 @@ fun GameScreen(
             }
             Text(
                 text = gameState.score.toString(),
-                style = MaterialTheme.typography.displayMedium,
+                fontSize = 50.sp,
+                lineHeight = 54.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
             Row(
@@ -112,6 +115,7 @@ fun GameScreen(
         }
         SpaceFactBanner(
             fact = uiState.spaceFact,
+            spinBonusText = uiState.spinBonusText,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(76.dp)
@@ -130,7 +134,7 @@ fun GameScreen(
                 drawBoardChrome = true,
                 modifier = Modifier
                     .matchParentSize()
-                    .padding(start = 36.dp, top = 40.dp, end = 36.dp, bottom = 40.dp)
+                    .padding(start = 28.dp, top = 34.dp, end = 28.dp, bottom = 34.dp)
             )
             Image(
                 painter = painterResource(R.drawable.space_board_frame_overlay),
@@ -201,6 +205,7 @@ fun GameScreen(
 @Composable
 private fun SpaceFactBanner(
     fact: String?,
+    spinBonusText: String?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -233,6 +238,33 @@ private fun SpaceFactBanner(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
+                )
+            }
+        }
+        if (spinBonusText != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 18.dp, bottom = 2.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color(0xDD00D4FF),
+                                Color(0xDD9C27FF),
+                                Color(0xDDFF2D75)
+                            )
+                        )
+                    )
+                    .padding(horizontal = 14.dp, vertical = 5.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = spinBonusText,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
                 )
             }
         }

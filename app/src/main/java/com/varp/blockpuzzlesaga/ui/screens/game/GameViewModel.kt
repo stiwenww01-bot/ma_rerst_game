@@ -51,6 +51,7 @@ class GameViewModel(
                     boardOverride = null,
                     clearingCells = emptySet(),
                     spaceFact = null,
+                    spinBonusText = null,
                     isResolvingClear = false,
                     isLoading = false
                 )
@@ -112,6 +113,7 @@ class GameViewModel(
                                 boardOverride = result.boardBeforeClear,
                                 clearingCells = clearingCells,
                                 spaceFact = fact,
+                                spinBonusText = if (result.spinBonusAwarded) "+1 поворот" else null,
                                 isResolvingClear = true
                             )
                         }
@@ -129,6 +131,7 @@ class GameViewModel(
                             dragPreview = null,
                             boardOverride = null,
                             clearingCells = emptySet(),
+                            spinBonusText = null,
                             isResolvingClear = false
                         )
                     }
@@ -152,6 +155,7 @@ class GameViewModel(
                     dragPreview = null,
                     boardOverride = null,
                     clearingCells = emptySet(),
+                    spinBonusText = null,
                     isResolvingClear = false
                 )
             }

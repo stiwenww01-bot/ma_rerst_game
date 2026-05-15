@@ -34,6 +34,10 @@ data class RotationManager(
         return copy(rotatedPieceIndices = rotatedPieceIndices - pieceIndex)
     }
 
+    fun addBonusRotation(): RotationManager {
+        return copy(remainingRotations = remainingRotations + 1)
+    }
+
     companion object {
         const val MAX_ROTATIONS = 3
     }

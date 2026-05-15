@@ -2,23 +2,40 @@ package com.varp.blockpuzzlesaga.domain.logic
 
 import com.varp.blockpuzzlesaga.domain.model.Piece
 import com.varp.blockpuzzlesaga.domain.model.PieceType
+import kotlin.math.min
 import kotlin.random.Random
 
 class PieceGenerator(
     private val random: Random = Random.Default
 ) {
-    fun generateTray(): List<Piece> {
+    fun generateTray(score: Int = 0): List<Piece> {
+        val difficulty = difficultyModifier(score)
         val small = smallPieces.random(random)
         val medium = mediumPieces.random(random)
         val any = allPieces.random(random)
-        return listOf(small, medium, any).mapIndexed { index, piece ->
-            piece.copy(colorIndex = random.nextInt(9) + index)
+        val pieces = listOf(
+            if (random.nextFloat() < difficulty * 0.35f) mediumPieces.random(random) else small,
+            if (random.nextFloat() < difficulty) hardPieces.random(random) else medium,
+            if (random.nextFloat() < difficulty) hardPieces.random(random) else any
+        )
+        return pieces.map { piece ->
+            piece.copy(colorIndex = random.nextInt(COLOR_COUNT))
         }
     }
 
     fun allTemplates(): List<Piece> = allPieces
 
+    fun difficultyModifier(score: Int): Float {
+        val steps = (score.coerceAtLeast(0) / DIFFICULTY_SCORE_STEP)
+        return min(steps * DIFFICULTY_STEP, DIFFICULTY_MAX)
+    }
+
     companion object {
+        const val COLOR_COUNT = 3
+        const val DIFFICULTY_SCORE_STEP = 3_000
+        const val DIFFICULTY_STEP = 0.10f
+        const val DIFFICULTY_MAX = 0.60f
+
         val single = Piece.of(PieceType.SINGLE, 0 to 0)
         val line2 = Piece.of(PieceType.LINE_2, 0 to 0, 1 to 0)
         val line3 = Piece.of(PieceType.LINE_3, 0 to 0, 1 to 0, 2 to 0)
@@ -53,6 +70,25 @@ class PieceGenerator(
 
         private val smallPieces = listOf(single, line2, line3, lSmall, step3, diagonal2)
         private val mediumPieces = listOf(square2, l, j, t, s, z, i, o, diagonal3)
+        private val hardPieces = listOf(
+            line4,
+            line5,
+            l,
+            j,
+            t,
+            s,
+            z,
+            i,
+            corner5,
+            plus,
+            u,
+            v,
+            shortT,
+            longL,
+            bigJ,
+            diagonal3,
+            pentominoP
+        )
         private val allPieces = listOf(
             single,
             line2,
