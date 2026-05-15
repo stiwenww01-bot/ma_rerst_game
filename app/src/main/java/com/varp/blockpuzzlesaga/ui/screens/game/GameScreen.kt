@@ -116,6 +116,7 @@ fun GameScreen(
         SpaceFactBanner(
             fact = uiState.spaceFact,
             spinBonusText = uiState.spinBonusText,
+            comboText = uiState.comboText,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(76.dp)
@@ -206,6 +207,7 @@ fun GameScreen(
 private fun SpaceFactBanner(
     fact: String?,
     spinBonusText: String?,
+    comboText: String?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -221,19 +223,19 @@ private fun SpaceFactBanner(
                     .background(
                         Brush.horizontalGradient(
                             listOf(
-                                Color(0x00183B75),
-                                Color(0xAA08315F),
-                                Color(0x00183B75)
+                                Color(0x5534F5FF),
+                                Color(0xCC0B4F95),
+                                Color(0xAA8A45F7)
                             )
                         )
                     )
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                    .padding(horizontal = 12.dp, vertical = 5.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = fact,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFFBFFBFF),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -241,33 +243,45 @@ private fun SpaceFactBanner(
                 )
             }
         }
-        if (spinBonusText != null) {
-            Box(
+        if (spinBonusText != null || comboText != null) {
+            Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 18.dp, bottom = 2.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                Color(0xDD00D4FF),
-                                Color(0xDD9C27FF),
-                                Color(0xDDFF2D75)
-                            )
-                        )
-                    )
-                    .padding(horizontal = 14.dp, vertical = 5.dp),
-                contentAlignment = Alignment.Center
+                    .padding(end = 18.dp, bottom = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = spinBonusText,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1
-                )
+                comboText?.let { BonusChip(text = it) }
+                spinBonusText?.let { BonusChip(text = it) }
             }
         }
+    }
+}
+
+@Composable
+private fun BonusChip(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        Color(0xEE00D4FF),
+                        Color(0xEE9C27FF),
+                        Color(0xEEFF2D75)
+                    )
+                )
+            )
+            .padding(horizontal = 14.dp, vertical = 5.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1
+        )
     }
 }
 

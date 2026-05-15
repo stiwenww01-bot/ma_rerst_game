@@ -24,6 +24,7 @@ class GameViewModel(
     private var spaceFactsDeck = SpaceFacts.shuffled()
     private var spaceFactIndex = 0
     private var lastSpaceFact: String? = null
+    private var soundEventId = 0
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     init {
@@ -43,6 +44,7 @@ class GameViewModel(
         viewModelScope.launch {
             val state = GameState()
             gameRepository.saveGame(state)
+            val sound = nextSoundEvent(GameSoundEvent.NewGame)
             _uiState.update {
                 it.copy(
                     gameState = state,
@@ -52,6 +54,9 @@ class GameViewModel(
                     clearingCells = emptySet(),
                     spaceFact = null,
                     spinBonusText = null,
+                    comboText = null,
+                    soundEvent = sound.first,
+                    soundEventId = sound.second,
                     isResolvingClear = false,
                     isLoading = false
                 )
@@ -68,6 +73,7 @@ class GameViewModel(
         if (_uiState.value.isResolvingClear) return
         val index = _uiState.value.selectedPieceIndex ?: return
         val nextState = _uiState.value.gameState.rotatePiece(index)
+        if (nextState == _uiState.value.gameState) return
         persist(nextState)
     }
 
@@ -88,23 +94,35 @@ class GameViewModel(
         _uiState.update { it.copy(selectedPieceIndex = pieceIndex, dragPreview = preview) }
     }
 
-    fun clearDragPreview() {
-        _uiState.update { it.copy(dragPreview = null) }
+    fun clearDragPreview(soundEvent: GameSoundEvent? = null) {
+        val sound = soundEvent?.let(::nextSoundEvent)
+        _uiState.update {
+            it.copy(
+                dragPreview = null,
+                soundEvent = sound?.first ?: it.soundEvent,
+                soundEventId = sound?.second ?: it.soundEventId
+            )
+        }
     }
 
     fun dropPiece(pieceIndex: Int, boardCell: CellCoord?) {
         if (_uiState.value.isResolvingClear) return
         val origin = boardCell ?: run {
-            clearDragPreview()
+            clearDragPreview(GameSoundEvent.Invalid)
             return
         }
         when (val result = _uiState.value.gameState.placePiece(pieceIndex, origin.x, origin.y)) {
-            is MoveResult.Invalid -> clearDragPreview()
+            is MoveResult.Invalid -> clearDragPreview(GameSoundEvent.Invalid)
             is MoveResult.Placed -> {
                 viewModelScope.launch {
                     val clearingCells = result.clearedCells + result.collapsedCells
+                    val comboText = if (result.clearGroupCount >= 2) "${result.clearGroupCount}x комбо" else null
+                    val spinBonusText = if (result.spinBonusAwarded) "+1 спин" else null
                     if (clearingCells.isNotEmpty()) {
                         val fact = nextSpaceFact()
+                        val sound = nextSoundEvent(
+                            if (result.spinBonusAwarded) GameSoundEvent.Bonus else GameSoundEvent.Clear
+                        )
                         _uiState.update {
                             it.copy(
                                 gameState = result.state.copy(board = result.boardBeforeClear),
@@ -113,7 +131,10 @@ class GameViewModel(
                                 boardOverride = result.boardBeforeClear,
                                 clearingCells = clearingCells,
                                 spaceFact = fact,
-                                spinBonusText = if (result.spinBonusAwarded) "+1 поворот" else null,
+                                spinBonusText = spinBonusText,
+                                comboText = comboText,
+                                soundEvent = sound.first,
+                                soundEventId = sound.second,
                                 isResolvingClear = true
                             )
                         }
@@ -123,6 +144,7 @@ class GameViewModel(
                         recordsRepository.saveRecord("overall", result.state.score)
                     }
                     gameRepository.saveGame(result.state)
+                    val placeSound = if (clearingCells.isEmpty()) nextSoundEvent(GameSoundEvent.Place) else null
                     _uiState.update {
                         it.copy(
                             gameState = result.state,
@@ -131,9 +153,21 @@ class GameViewModel(
                             dragPreview = null,
                             boardOverride = null,
                             clearingCells = emptySet(),
-                            spinBonusText = null,
+                            spinBonusText = spinBonusText,
+                            comboText = comboText,
+                            soundEvent = placeSound?.first ?: it.soundEvent,
+                            soundEventId = placeSound?.second ?: it.soundEventId,
                             isResolvingClear = false
                         )
+                    }
+                    if (spinBonusText != null || comboText != null) {
+                        delay(BONUS_MESSAGE_MILLIS - CLEAR_HIGHLIGHT_MILLIS)
+                        _uiState.update {
+                            it.copy(
+                                spinBonusText = null,
+                                comboText = null
+                            )
+                        }
                     }
                 }
             }
@@ -149,6 +183,7 @@ class GameViewModel(
     private fun persist(state: GameState) {
         viewModelScope.launch {
             gameRepository.saveGame(state)
+            val sound = nextSoundEvent(GameSoundEvent.Rotate)
             _uiState.update {
                 it.copy(
                     gameState = state,
@@ -156,10 +191,18 @@ class GameViewModel(
                     boardOverride = null,
                     clearingCells = emptySet(),
                     spinBonusText = null,
+                    comboText = null,
+                    soundEvent = sound.first,
+                    soundEventId = sound.second,
                     isResolvingClear = false
                 )
             }
         }
+    }
+
+    private fun nextSoundEvent(event: GameSoundEvent): Pair<GameSoundEvent, Int> {
+        soundEventId += 1
+        return event to soundEventId
     }
 
     private fun nextSpaceFact(): String {
@@ -178,39 +221,9 @@ class GameViewModel(
 
     private companion object {
         const val CLEAR_HIGHLIGHT_MILLIS = 320L
+        const val BONUS_MESSAGE_MILLIS = 2_300L
 
-        val SpaceFacts = listOf(
-            "На Венере день длиннее года.",
-            "Солнце держит около 99,8% массы системы.",
-            "Следы на Луне могут жить миллионы лет.",
-            "У Юпитера больше 90 известных спутников.",
-            "Свет Солнца летит к Земле около 8 минут.",
-            "Марс красный из-за оксида железа в пыли.",
-            "Кольца Сатурна состоят из льда и камня.",
-            "МКС облетает Землю примерно за 90 минут.",
-            "Луна каждый год отдаляется примерно на 4 см.",
-            "На Нептуне дуют самые быстрые ветры планет.",
-            "Один год на Меркурии длится 88 земных дней.",
-            "Уран вращается почти лежа на боку.",
-            "Плутон меньше земной Луны.",
-            "Кометы оставляют хвосты из газа и пыли.",
-            "Млечный Путь содержит сотни миллиардов звезд.",
-            "Черная дыра не светит, но видна по влиянию.",
-            "Скафандр защищает от вакуума и перепадов тепла.",
-            "Первый спутник Земли запустили в 1957 году.",
-            "На Луне нет ветра и привычной погоды.",
-            "Ганимед больше планеты Меркурий.",
-            "Титан имеет плотную атмосферу.",
-            "На Марсе есть крупнейший вулкан системы.",
-            "Астероиды часто богаты металлами и камнем.",
-            "Полярные сияния бывают и на других планетах.",
-            "В космосе звук не идет через вакуум.",
-            "Звезды рождаются в облаках газа и пыли.",
-            "Белые карлики остывают миллиарды лет.",
-            "Сутки на Юпитере длятся около 10 часов.",
-            "На Венере облака содержат серную кислоту.",
-            "Лед есть в кратерах у полюсов Луны."
-        )
+        val SpaceFacts = buildSpaceFacts()
     }
 
     class Factory(

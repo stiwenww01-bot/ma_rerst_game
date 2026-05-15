@@ -14,9 +14,21 @@ data class GameUiState(
     val clearingCells: Set<CellCoord> = emptySet(),
     val spaceFact: String? = null,
     val spinBonusText: String? = null,
+    val comboText: String? = null,
+    val soundEvent: GameSoundEvent? = null,
+    val soundEventId: Int = 0,
     val isResolvingClear: Boolean = false,
     val isLoading: Boolean = true
 )
+
+enum class GameSoundEvent {
+    NewGame,
+    Rotate,
+    Place,
+    Clear,
+    Bonus,
+    Invalid
+}
 
 data class DragPreview(
     val pieceIndex: Int,

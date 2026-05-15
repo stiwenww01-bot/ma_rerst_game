@@ -1,5 +1,7 @@
 package com.varp.blockpuzzlesaga
 
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -12,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -26,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.varp.blockpuzzlesaga.app.AppContainer
 import com.varp.blockpuzzlesaga.ui.screens.game.GameScreen
+import com.varp.blockpuzzlesaga.ui.screens.game.GameSoundEvent
 import com.varp.blockpuzzlesaga.ui.screens.game.GameViewModel
 import com.varp.blockpuzzlesaga.ui.screens.menu.MainMenuScreen
 import com.varp.blockpuzzlesaga.ui.screens.records.RecordsScreen
@@ -33,6 +37,7 @@ import com.varp.blockpuzzlesaga.ui.screens.settings.SettingsScreen
 import com.varp.blockpuzzlesaga.ui.screens.settings.SettingsViewModel
 import com.varp.blockpuzzlesaga.ui.theme.BlockPuzzleSagaTheme
 import com.varp.blockpuzzlesaga.ui.theme.GameBackground
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +72,13 @@ fun BlockPuzzleSagaApp() {
     val navController = rememberNavController()
 
     BlockPuzzleSagaTheme {
+        GameSoundEffectPlayer(
+            event = uiState.soundEvent,
+            eventId = uiState.soundEventId,
+            soundEnabled = settingsState.soundEnabled,
+            effectsEnabled = settingsState.soundEffectsEnabled,
+            volume = settingsState.sfxVolume
+        )
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = Color.Transparent,
@@ -107,7 +119,7 @@ fun BlockPuzzleSagaApp() {
                             onRotate = viewModel::rotateSelectedPiece,
                             onPreview = viewModel::updateDragPreview,
                             onDrop = viewModel::dropPiece,
-                            onCancelDrag = viewModel::clearDragPreview,
+                            onCancelDrag = { viewModel.clearDragPreview() },
                             onRestart = viewModel::newGame
                         )
                     }
@@ -133,6 +145,41 @@ fun BlockPuzzleSagaApp() {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun GameSoundEffectPlayer(
+    event: GameSoundEvent?,
+    eventId: Int,
+    soundEnabled: Boolean,
+    effectsEnabled: Boolean,
+    volume: Float
+) {
+    val toneVolume = (volume.coerceIn(0f, 1f) * 100).roundToInt().coerceIn(0, 100)
+    val toneGenerator = remember(toneVolume) {
+        ToneGenerator(AudioManager.STREAM_MUSIC, toneVolume)
+    }
+    DisposableEffect(toneGenerator) {
+        onDispose { toneGenerator.release() }
+    }
+    LaunchedEffect(eventId) {
+        if (event == null || eventId == 0 || !soundEnabled || !effectsEnabled || toneVolume == 0) return@LaunchedEffect
+        val tone = when (event) {
+            GameSoundEvent.NewGame -> ToneGenerator.TONE_PROP_ACK
+            GameSoundEvent.Rotate -> ToneGenerator.TONE_PROP_BEEP
+            GameSoundEvent.Place -> ToneGenerator.TONE_PROP_BEEP2
+            GameSoundEvent.Clear -> ToneGenerator.TONE_PROP_PROMPT
+            GameSoundEvent.Bonus -> ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD
+            GameSoundEvent.Invalid -> ToneGenerator.TONE_PROP_NACK
+        }
+        val duration = when (event) {
+            GameSoundEvent.Bonus -> 180
+            GameSoundEvent.Clear -> 140
+            GameSoundEvent.Invalid -> 110
+            else -> 85
+        }
+        toneGenerator.startTone(tone, duration)
     }
 }
 

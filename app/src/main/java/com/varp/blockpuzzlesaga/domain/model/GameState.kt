@@ -64,7 +64,8 @@ data class GameState(
             clearedCells = clearResult.clearedCells,
             collapsedCells = comboUpdate.collapse?.cells.orEmpty(),
             addedScore = addedScore,
-            spinBonusAwarded = spinBonusAwarded
+            spinBonusAwarded = spinBonusAwarded,
+            clearGroupCount = clearResult.groups.size
         )
     }
 
@@ -95,7 +96,8 @@ sealed class MoveResult {
         val clearedCells: Set<CellCoord>,
         val collapsedCells: Set<CellCoord>,
         val addedScore: Int,
-        val spinBonusAwarded: Boolean
+        val spinBonusAwarded: Boolean,
+        val clearGroupCount: Int
     ) : MoveResult()
 
     data class Invalid(
