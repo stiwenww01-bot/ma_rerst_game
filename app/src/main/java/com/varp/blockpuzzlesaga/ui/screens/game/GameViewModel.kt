@@ -115,59 +115,84 @@ class GameViewModel(
         when (val result = _uiState.value.gameState.placePiece(pieceIndex, origin.x, origin.y)) {
             is MoveResult.Invalid -> clearDragPreview(GameSoundEvent.Invalid)
             is MoveResult.Placed -> {
-                viewModelScope.launch {
-                    val clearingCells = result.clearedCells + result.collapsedCells
-                    val comboText = if (result.clearGroupCount >= 2) "${result.clearGroupCount}x комбо" else null
-                    val spinBonusText = if (result.spinBonusAwarded) "+1 спин" else null
-                    if (clearingCells.isNotEmpty()) {
-                        val fact = nextSpaceFact()
-                        val sound = nextSoundEvent(
-                            if (result.spinBonusAwarded) GameSoundEvent.Bonus else GameSoundEvent.Clear
+                val clearingCells = result.clearedCells + result.collapsedCells
+                val comboText = if (result.clearGroupCount >= 2) "${result.clearGroupCount}x комбо" else null
+                val spinBonusText = if (result.spinBonusAwarded) "+1 спин" else null
+                val clearSound = if (clearingCells.isNotEmpty()) {
+                    nextSoundEvent(if (result.spinBonusAwarded) GameSoundEvent.Bonus else GameSoundEvent.Clear)
+                } else {
+                    null
+                }
+                val placeSound = if (clearingCells.isEmpty()) nextSoundEvent(GameSoundEvent.Place) else null
+
+                if (clearingCells.isNotEmpty()) {
+                    _uiState.update {
+                        it.copy(
+                            gameState = result.state.copy(board = result.boardBeforeClear),
+                            selectedPieceIndex = null,
+                            dragPreview = null,
+                            boardOverride = result.boardBeforeClear,
+                            clearingCells = clearingCells,
+                            feedbackCells = clearingCells,
+                            spaceFact = nextSpaceFact(),
+                            spinBonusText = spinBonusText,
+                            comboText = comboText,
+                            soundEvent = clearSound?.first ?: it.soundEvent,
+                            soundEventId = clearSound?.second ?: it.soundEventId,
+                            isResolvingClear = true
                         )
-                        _uiState.update {
-                            it.copy(
-                                gameState = result.state.copy(board = result.boardBeforeClear),
-                                selectedPieceIndex = null,
-                                dragPreview = null,
-                                boardOverride = result.boardBeforeClear,
-                                clearingCells = clearingCells,
-                                feedbackCells = clearingCells,
-                                spaceFact = fact,
-                                spinBonusText = spinBonusText,
-                                comboText = comboText,
-                                soundEvent = sound.first,
-                                soundEventId = sound.second,
-                                isResolvingClear = true
-                            )
-                        }
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            gameState = result.state,
+                            selectedPieceIndex = null,
+                            dragPreview = null,
+                            boardOverride = null,
+                            clearingCells = emptySet(),
+                            feedbackCells = emptySet(),
+                            spinBonusText = null,
+                            comboText = null,
+                            soundEvent = placeSound?.first ?: it.soundEvent,
+                            soundEventId = placeSound?.second ?: it.soundEventId,
+                            isResolvingClear = false
+                        )
+                    }
+                }
+
+                viewModelScope.launch {
+                    if (clearingCells.isNotEmpty()) {
                         delay(CLEAR_HIGHLIGHT_MILLIS)
                     }
                     if (result.state.gameOver) {
                         recordsRepository.saveRecord("overall", result.state.score)
                     }
                     gameRepository.saveGame(result.state)
-                    val placeSound = if (clearingCells.isEmpty()) nextSoundEvent(GameSoundEvent.Place) else null
-                    _uiState.update {
-                        it.copy(
-                            gameState = result.state,
-                            records = recordsRepository.getRecords(),
-                            selectedPieceIndex = null,
-                            dragPreview = null,
-                            boardOverride = null,
-                            clearingCells = emptySet(),
-                            feedbackCells = if (spinBonusText != null || comboText != null) {
-                                it.feedbackCells
-                            } else {
-                                emptySet()
-                            },
-                            spinBonusText = spinBonusText,
-                            comboText = comboText,
-                            soundEvent = placeSound?.first ?: it.soundEvent,
-                            soundEventId = placeSound?.second ?: it.soundEventId,
-                            isResolvingClear = false
-                        )
+
+                    if (clearingCells.isNotEmpty()) {
+                        _uiState.update {
+                            it.copy(
+                                gameState = result.state,
+                                records = recordsRepository.getRecords(),
+                                selectedPieceIndex = null,
+                                dragPreview = null,
+                                boardOverride = null,
+                                clearingCells = emptySet(),
+                                feedbackCells = if (spinBonusText != null || comboText != null) {
+                                    it.feedbackCells
+                                } else {
+                                    emptySet()
+                                },
+                                spinBonusText = spinBonusText,
+                                comboText = comboText,
+                                isResolvingClear = false
+                            )
+                        }
+                    } else if (result.state.gameOver) {
+                        _uiState.update { it.copy(records = recordsRepository.getRecords()) }
                     }
-                    if (spinBonusText != null || comboText != null) {
+
+                    if (clearingCells.isNotEmpty() && (spinBonusText != null || comboText != null)) {
                         delay(BONUS_MESSAGE_MILLIS - CLEAR_HIGHLIGHT_MILLIS)
                         _uiState.update {
                             it.copy(

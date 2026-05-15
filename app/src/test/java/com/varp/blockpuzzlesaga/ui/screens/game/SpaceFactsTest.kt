@@ -6,10 +6,10 @@ import org.junit.Test
 
 class SpaceFactsTest {
     @Test
-    fun spaceFactsContainFiveHundredUniqueShortFacts() {
+    fun spaceFactsContainImportedUniqueShortFacts() {
         val facts = buildSpaceFacts()
 
-        assertEquals(500, facts.size)
+        assertEquals(300, facts.size)
         assertEquals(facts.size, facts.toSet().size)
         assertTrue(facts.all { it.length <= 90 })
     }
