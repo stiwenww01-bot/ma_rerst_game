@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -169,28 +171,34 @@ fun GameScreen(
                 .padding(horizontal = 4.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = onRotate,
-            enabled = uiState.selectedPieceIndex != null &&
-                gameState.rotationManager.canRotate(uiState.selectedPieceIndex) &&
-                !uiState.isResolvingClear,
-            modifier = Modifier.size(58.dp),
-            shape = CircleShape,
-            border = BorderStroke(2.dp, colors.boardLine),
-            contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.panelBackground,
-                contentColor = colors.clearHighlight,
-                disabledContainerColor = colors.panelBackground.copy(alpha = 0.55f),
-                disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f)
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(R.drawable.space_icon_rotate),
-                contentDescription = stringResource(R.string.rotate),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
-            )
+            SpinCounterBadge(remainingSpins = gameState.rotationManager.remainingRotations)
+            Button(
+                onClick = onRotate,
+                enabled = uiState.selectedPieceIndex != null &&
+                    gameState.rotationManager.canRotate(uiState.selectedPieceIndex) &&
+                    !uiState.isResolvingClear,
+                modifier = Modifier.size(58.dp),
+                shape = CircleShape,
+                border = BorderStroke(2.dp, colors.boardLine),
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.panelBackground,
+                    contentColor = colors.clearHighlight,
+                    disabledContainerColor = colors.panelBackground.copy(alpha = 0.55f),
+                    disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f)
+                )
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.space_icon_rotate),
+                    contentDescription = stringResource(R.string.rotate),
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            }
         }
     }
 
@@ -210,6 +218,57 @@ fun GameScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun SpinCounterBadge(remainingSpins: Int) {
+    val colors = LocalGameColors.current
+    Row(
+        modifier = Modifier
+            .height(50.dp)
+            .widthIn(min = 118.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        Color(0xD609173A),
+                        Color(0xE60B5D9A),
+                        Color(0xD64A1FA0)
+                    )
+                )
+            )
+            .border(1.5.dp, colors.boardLine.copy(alpha = 0.9f), RoundedCornerShape(999.dp))
+            .padding(start = 10.dp, end = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        Image(
+            painter = painterResource(R.drawable.space_icon_rotate),
+            contentDescription = null,
+            modifier = Modifier.size(32.dp),
+            contentScale = ContentScale.Fit
+        )
+        Column(
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Спины",
+                fontSize = 11.sp,
+                lineHeight = 12.sp,
+                color = Color(0xFFBDFBFF),
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+            Text(
+                text = remainingSpins.toString(),
+                fontSize = 23.sp,
+                lineHeight = 24.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Black,
+                maxLines = 1
+            )
+        }
     }
 }
 
