@@ -165,7 +165,7 @@ class GameViewModel(
                         delay(CLEAR_HIGHLIGHT_MILLIS)
                     }
                     if (result.state.gameOver) {
-                        recordsRepository.saveRecord("overall", result.state.score)
+                        recordsRepository.saveGameRecords(result.state.score)
                     }
                     gameRepository.saveGame(result.state)
 

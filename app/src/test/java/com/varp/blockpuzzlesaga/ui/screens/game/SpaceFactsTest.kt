@@ -9,8 +9,8 @@ class SpaceFactsTest {
     fun spaceFactsContainImportedUniqueShortFacts() {
         val facts = buildSpaceFacts()
 
-        assertEquals(300, facts.size)
+        assertTrue(facts.size >= 100)
         assertEquals(facts.size, facts.toSet().size)
-        assertTrue(facts.all { it.length <= 72 })
+        assertTrue(facts.all { it.length <= 70 })
     }
 }

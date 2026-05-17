@@ -26,4 +26,13 @@ class RecordsRepository(
     suspend fun getRecords(): List<RecordEntity> {
         return recordDao.findAll()
     }
+
+    suspend fun saveGameRecords(score: Int, updatedAtMillis: Long = System.currentTimeMillis()) {
+        val date = RecordScopes.dateFromMillis(updatedAtMillis)
+        saveRecord(RecordScopes.OVERALL, score, updatedAtMillis)
+        saveRecord(RecordScopes.year(date), score, updatedAtMillis)
+        saveRecord(RecordScopes.month(date), score, updatedAtMillis)
+        saveRecord(RecordScopes.week(date), score, updatedAtMillis)
+        saveRecord(RecordScopes.today(date), score, updatedAtMillis)
+    }
 }

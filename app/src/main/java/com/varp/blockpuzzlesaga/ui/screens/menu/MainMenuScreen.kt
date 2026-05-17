@@ -37,6 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.varp.blockpuzzlesaga.R
 import com.varp.blockpuzzlesaga.data.db.RecordEntity
+import com.varp.blockpuzzlesaga.data.repository.RecordScopes
+import com.varp.blockpuzzlesaga.data.repository.RecordSummary
 import com.varp.blockpuzzlesaga.ui.theme.LocalGameColors
 
 @Composable
@@ -48,7 +50,7 @@ fun MainMenuScreen(
     onSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bestScore = records.maxOfOrNull { it.score } ?: 0
+    val recordSummary = RecordScopes.summary(records)
 
     Column(
         modifier = modifier
@@ -69,7 +71,7 @@ fun MainMenuScreen(
         )
 
         Spacer(modifier = Modifier.height(22.dp))
-        GalacticRecordsPanel(bestScore = bestScore)
+        GalacticRecordsPanel(recordSummary = recordSummary)
 
         Spacer(modifier = Modifier.height(26.dp))
         NeonNewGameButton(
@@ -148,7 +150,7 @@ private fun MenuHeader(onSettings: () -> Unit) {
 }
 
 @Composable
-private fun GalacticRecordsPanel(bestScore: Int) {
+private fun GalacticRecordsPanel(recordSummary: RecordSummary) {
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
@@ -169,11 +171,11 @@ private fun GalacticRecordsPanel(bestScore: Int) {
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
-            BestRecordRow(bestScore = bestScore)
-            RecordPeriodRow(starColor = Color(0xFFFFD56A), label = "За год", score = bestScore)
-            RecordPeriodRow(starColor = Color(0xFFFF7CC9), label = "За месяц", score = bestScore)
-            RecordPeriodRow(starColor = Color(0xFFC4D8FF), label = "За неделю", score = bestScore)
-            RecordPeriodRow(starColor = Color(0xFF36E7FF), label = "Сегодня", score = bestScore)
+            BestRecordRow(bestScore = recordSummary.overall)
+            RecordPeriodRow(starColor = Color(0xFFFFD56A), label = "За год", score = recordSummary.year)
+            RecordPeriodRow(starColor = Color(0xFFFF7CC9), label = "За месяц", score = recordSummary.month)
+            RecordPeriodRow(starColor = Color(0xFFC4D8FF), label = "За неделю", score = recordSummary.week)
+            RecordPeriodRow(starColor = Color(0xFF36E7FF), label = "Сегодня", score = recordSummary.today)
         }
     }
 }

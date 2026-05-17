@@ -7,6 +7,7 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import com.varp.blockpuzzlesaga.data.repository.GameRepository
+import com.varp.blockpuzzlesaga.data.repository.RecordScopes
 import com.varp.blockpuzzlesaga.data.repository.RecordsRepository
 import com.varp.blockpuzzlesaga.data.repository.SettingsRepository
 import com.varp.blockpuzzlesaga.data.repository.StatsRepository
@@ -54,6 +55,30 @@ class AppDatabaseTest {
             val saved = repository.getRecord("daily")
             assertEquals(800, saved?.score)
             assertEquals(3L, saved?.updatedAtMillis)
+        }
+    }
+
+    @Test
+    fun recordsRepositorySavesSeparateCurrentPeriodRecords() = runTest {
+        withDatabase { db ->
+            val repository = RecordsRepository(db.recordDao())
+            val firstDay = java.time.LocalDate.of(2026, 5, 16)
+            val nextDay = firstDay.plusDays(1)
+            val zoneId = java.time.ZoneId.systemDefault()
+            val firstMillis = firstDay
+                .atStartOfDay(zoneId)
+                .toInstant()
+                .toEpochMilli()
+            val nextMillis = nextDay
+                .atStartOfDay(zoneId)
+                .toInstant()
+                .toEpochMilli()
+
+            repository.saveGameRecords(score = 2_000, updatedAtMillis = firstMillis)
+            repository.saveGameRecords(score = 900, updatedAtMillis = nextMillis)
+
+            assertEquals(2_000, repository.getRecord(RecordScopes.OVERALL)?.score)
+            assertEquals(900, repository.getRecord(RecordScopes.today(nextDay))?.score)
         }
     }
 

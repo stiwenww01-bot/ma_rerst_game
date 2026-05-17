@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.varp.blockpuzzlesaga.R
 import com.varp.blockpuzzlesaga.data.db.RecordEntity
+import com.varp.blockpuzzlesaga.data.repository.RecordScopes
 import com.varp.blockpuzzlesaga.ui.theme.LocalGameColors
 
 @Composable
@@ -37,7 +38,7 @@ fun RecordsScreen(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalGameColors.current
-    val best = records.maxOfOrNull { it.score } ?: 0
+    val summary = RecordScopes.summary(records)
 
     Column(
         modifier = modifier
@@ -64,7 +65,7 @@ fun RecordsScreen(
                 modifier = Modifier.padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                RecordHeroRow(best)
+                RecordHeroRow(summary.overall)
                 if (records.isEmpty()) {
                     Text(
                         text = stringResource(R.string.no_records),
@@ -74,9 +75,10 @@ fun RecordsScreen(
                         textAlign = TextAlign.Center
                     )
                 } else {
-                    records.sortedByDescending { it.score }.forEach { record ->
-                        RecordLine(label = record.scope, score = record.score)
-                    }
+                    RecordLine(label = "За год", score = summary.year)
+                    RecordLine(label = "За месяц", score = summary.month)
+                    RecordLine(label = "За неделю", score = summary.week)
+                    RecordLine(label = "Сегодня", score = summary.today)
                 }
             }
         }
