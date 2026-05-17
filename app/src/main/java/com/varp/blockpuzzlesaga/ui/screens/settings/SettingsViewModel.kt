@@ -19,12 +19,21 @@ data class SettingsUiState(
     val musicEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
     val sfxVolume: Float = 1f,
-    val musicVolume: Float = 0.45f
+    val musicVolume: Float = 0.55f
 )
 
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            val current = settingsRepository.getSettings()
+            if (current.soundEnabled && current.musicVolume <= 0f) {
+                settingsRepository.saveSettings(current.copy(musicVolume = DEFAULT_MUSIC_VOLUME))
+            }
+        }
+    }
+
     val uiState: StateFlow<SettingsUiState> = settingsRepository.observeSettings()
         .map { it.toUiState() }
         .stateIn(
@@ -53,7 +62,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             val current = settingsRepository.getSettings()
             settingsRepository.saveSettings(
-                current.copy(musicVolume = if (enabled) current.musicVolume.coerceAtLeast(0.35f) else 0f)
+                current.copy(musicVolume = if (enabled) current.musicVolume.coerceAtLeast(DEFAULT_MUSIC_VOLUME) else 0f)
             )
         }
     }
@@ -86,6 +95,10 @@ class SettingsViewModel(
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return SettingsViewModel(settingsRepository) as T
         }
+    }
+
+    private companion object {
+        const val DEFAULT_MUSIC_VOLUME = 0.55f
     }
 }
 

@@ -216,7 +216,7 @@ private fun SpaceMusicPlayer(
         }
     }
     LaunchedEffect(soundEnabled, musicEnabled, volume) {
-        val musicVolume = if (soundEnabled && musicEnabled) volume.coerceIn(0f, 1f) * 0.42f else 0f
+        val musicVolume = if (soundEnabled && musicEnabled) volume.coerceIn(0f, 1f) * 0.82f else 0f
         mediaPlayer.setVolume(musicVolume, musicVolume)
         if (musicVolume > 0f && !mediaPlayer.isPlaying) {
             mediaPlayer.start()

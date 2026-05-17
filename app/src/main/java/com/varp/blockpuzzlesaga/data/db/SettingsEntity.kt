@@ -10,7 +10,7 @@ data class SettingsEntity(
     val soundEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
     val sfxVolume: Float = 0.8f,
-    val musicVolume: Float = 0.45f
+    val musicVolume: Float = 0.55f
 ) {
     companion object {
         const val DEFAULT_ID = 1
