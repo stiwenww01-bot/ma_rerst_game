@@ -451,6 +451,32 @@ class GameLogicTest {
         assertFalse(state.isGameOver())
     }
 
+    @Test
+    fun gameStateDoesNotReportGameOverWhenPieceCanFitAfterRotation() {
+        val verticalGap = setOf(CellCoord(8, 6), CellCoord(8, 7), CellCoord(8, 8))
+        val occupied = allBoardCells().filterNot { it in verticalGap }
+        val state = GameState(
+            board = filledBoard(occupied),
+            availablePieces = listOf(PieceGenerator.line3, null, null),
+            rotationManager = RotationManager(remainingRotations = 1)
+        )
+
+        assertFalse(state.isGameOver())
+    }
+
+    @Test
+    fun gameStateReportsGameOverWhenOnlyRotatedPlacementFitsButNoRotationIsAvailable() {
+        val verticalGap = setOf(CellCoord(8, 6), CellCoord(8, 7), CellCoord(8, 8))
+        val occupied = allBoardCells().filterNot { it in verticalGap }
+        val state = GameState(
+            board = filledBoard(occupied),
+            availablePieces = listOf(PieceGenerator.line3, null, null),
+            rotationManager = RotationManager(remainingRotations = 0)
+        )
+
+        assertTrue(state.isGameOver())
+    }
+
     private fun tracked(
         type: PieceType,
         id: Long,

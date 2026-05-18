@@ -79,8 +79,24 @@ data class GameState(
     }
 
     fun isGameOver(): Boolean {
-        val pieces = availablePieces.filterNotNull()
-        return pieces.isNotEmpty() && pieces.none(board::canPlaceAny)
+        val pieces = availablePieces.withIndex().filter { it.value != null }
+        return pieces.isNotEmpty() && pieces.none { (index, piece) ->
+            canPlaceAvailablePiece(index, requireNotNull(piece))
+        }
+    }
+
+    private fun canPlaceAvailablePiece(index: Int, piece: Piece): Boolean {
+        if (board.canPlaceAny(piece)) return true
+        if (!rotationManager.canRotate(index)) return false
+
+        return rotatedVariants(piece).any(board::canPlaceAny)
+    }
+
+    private fun rotatedVariants(piece: Piece): Set<Piece> {
+        val first = piece.rotatedClockwise()
+        val second = first.rotatedClockwise()
+        val third = second.rotatedClockwise()
+        return setOf(first, second, third)
     }
 
     private fun withGameOverFlag(): GameState = copy(gameOver = isGameOver())
